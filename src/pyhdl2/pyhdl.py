@@ -14,7 +14,7 @@ class Module(_PHDLObj):
         nl = '\n\t\t   '
 
         _interfaces = \
-            f"{f';{nl}'.join([f'{signal.name} : {signal.direction} {signal.type}' for signal in self.interfaces])}" \
+            f"{f';{nl}'.join([f'{signal.name} : {signal.direction} {signal.type.serialize(signal.type)}' for signal in self.interfaces])}" \
                 if self.interfaces is not None and isinstance(self.interfaces, Iterable) \
                 else ""
 
