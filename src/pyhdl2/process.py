@@ -4,17 +4,15 @@ from typing import List, Optional
 from collections.abc import Iterable
 
 
-def process(argument):
-    def decorator(function):
-        print("0")
-        def wrapper(*args, **kwargs):
+def process(sense):
+    def wrapper(*args):
+        def decorator(function):
+            print("0")
+            x = args[0](function)
+            print(x)
             print("1")
-            print(argument)
-            result = function(*args, **kwargs)
-            print("3")
-            return result
-        return wrapper
-    return decorator
+        return decorator
+    return wrapper
 
 
 class Process(_PHDLObj):

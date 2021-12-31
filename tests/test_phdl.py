@@ -115,6 +115,8 @@ def test_procedure():
     class MyProcess(Process):
         name = "Pro"
         sensitivity = [MyArchitecture.sig1]
-        print("2")
-
         pass
+
+    @Process
+    def myProcess():
+        print("x")
