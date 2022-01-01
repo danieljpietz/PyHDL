@@ -3,6 +3,7 @@ pyproject.toml
 setup.cfg
 setup.py
 src/pyhdl2/__init__.py
+src/pyhdl2/parse.py
 src/pyhdl2/process.py
 src/pyhdl2/py.typed
 src/pyhdl2/pyhdl.py

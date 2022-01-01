@@ -1,3 +1,4 @@
+anytree>=2.8.0
 
 [testing]
 pytest>=6.0

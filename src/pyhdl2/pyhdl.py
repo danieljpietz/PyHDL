@@ -1,11 +1,12 @@
 from .types import _PHDLObj, Signal, PortSignal, enforce_types
 from typing import List, Optional
 from collections.abc import Iterable
+from .process import Process
 
 
 @enforce_types
-class Module(_PHDLObj):
-    """Top Level Module for an HDL design"""
+class Entity(_PHDLObj):
+    """Top Level Entity for an HDL design"""
 
     name: Optional[str]
     interfaces: Optional[List[PortSignal]]
@@ -23,10 +24,10 @@ class Module(_PHDLObj):
                f"end entity {self.name};"
 
 
-def module(Target):
-    if not isinstance(Target, type(Module)):
+def entity(Target):
+    if not isinstance(Target, type(Entity)):
         raise TypeError(
-            'Unexpected type for \'{}\' (expected {} but found {})'.format(Target.__name__, Module, type(Target)))
+            'Unexpected type for \'{}\' (expected {} but found {})'.format(Target.__name__, Entity, type(Target)))
     target = Target()
     if not hasattr(target, 'name'):
         target.name = Target.__name__
@@ -41,26 +42,40 @@ def module(Target):
     return target
 
 
+def get_architecture_processes(target):
+    architecture = type(target)
+    for item in architecture.__dict__:
+        if isinstance(architecture.__dict__[item], Process):
+            architecture.__dict__[item].architecture = architecture
+            architecture.__dict__[item].invoke()
+    pass
+
+
 def architecture(Target):
-    if not isinstance(Target.module, Module):
-        raise TypeError(f"{Target.module.__class__.__name__} object not derived from Module")
+    if not isinstance(Target.entity, Entity):
+        raise TypeError(f"{Target.entity.__class__.__name__} object not derived from Entity")
     Target.signals = []
+    target_new_signals = []
     for member in Target.__dict__:
         if isinstance(Target.__dict__[member], Signal):
-            Target.add_signal(Target, Target.__dict__[member])
+            target_new_signals.append(Target.__dict__[member])
         elif isinstance(Target.__dict__[member], Iterable) and member != 'signals':
             if len(Target.__dict__[member]) > 1 and isinstance(Target.__dict__[member][0], Signal):
                 for signal in Target.__dict__[member]:
-                    Target.add_signal(Target, signal)
+                    target_new_signals.append(signal)
+    for signal in target_new_signals:
+        Target.add_signal(Target, signal)
     target = Target()
+    get_architecture_processes(target)
     return target
     pass
 
 
 @enforce_types
 class Architecture(_PHDLObj):
-    module: Module
+    entity: Entity
     signals: List[Signal] = []
+    processes: List[Process] = []
 
     def add_signal(self, sig):
         if isinstance(sig, Signal) and not isinstance(sig, PortSignal):
@@ -81,7 +96,11 @@ class Architecture(_PHDLObj):
             else f"signal {self.signals[0]};" if len(self.signals) == 1 \
             else ""
 
-        return f"architecture rtl of {self.module.name} is\n" \
+        _processes = '\n\n'.join([process.serialize() for process in self.processes])
+        _processes = '\t' + _processes.replace('\n', '\n\t')
+
+        return f"architecture rtl of {self.entity.name} is\n" \
                f"\t{_signals}\n" \
                f"begin\n" \
+               f"{_processes}\n" \
                f"end architecture rtl;"

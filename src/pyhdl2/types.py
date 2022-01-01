@@ -1,12 +1,15 @@
 from dataclasses import dataclass
-from enum import IntEnum, Enum
+from enum import IntEnum
 import typing
-from typing import Tuple, Callable, Optional
+from typing import Tuple, Callable, Optional, Type
 from abc import abstractmethod
 from contextlib import suppress
 from functools import wraps
 import inspect
+from anytree import Node
 
+
+# from .parse import operator
 
 class _PHDLObj(object):
     @abstractmethod
@@ -63,6 +66,7 @@ def enforce_types(callable):
 @dataclass
 class Type(_PHDLObj):
     type_str: str
+    casts: Optional[Tuple[Type]]
 
     def __new__(cls, v):
         if not cls.__contains__(cls, v):
@@ -74,10 +78,18 @@ class Type(_PHDLObj):
         return f"{self.type_str}(\'{self.value}\')"
 
     def __repr__(self):
-        return f"{type_(self).__name__}(type_str=\'{self.type_str}\', value=\'{self.value}\')"
+        return f"{type_(self).__name__ if hasattr(self, '__name__') else ''}(type_str=\'{self.type_str}\', value=\'{self.value()}\')"
 
     def serialize(self):
         return self.type_str
+
+    @abstractmethod
+    def value(self):
+        pass
+
+    @abstractmethod
+    def type_check(self, other, op):
+        return self
 
 
 @enforce_types
@@ -97,8 +109,54 @@ class _SignalBase(_PHDLObj):
     def serialize(self):
         return f"{self.name} : {self.type.serialize(self.type)}"
 
-    def _type(self):
-        return type_(self.type)
+    def __add__(self, other):
+        return operator(self, other, '+')
+
+    def __and__(self, other):
+        return operator(self, other, 'and')
+
+    def __or__(self, other):
+        return operator(self, other, 'or')
+
+    def __xor__(self, other):
+        return operator(self, other, 'xor')
+
+    def __sub__(self, other):
+        return operator(self, other, '-')
+
+
+class SigNode(Node, _SignalBase):
+
+    def value(self):
+        if len(self.children) >= 2:
+            children = []
+            for child in self.children:
+                if len(child.children) == 2:
+                    children.append(f"({child.value()})")
+                else:
+                    children.append(child.value())
+            return f"{children[0]} {self.name} {children[1]}"
+        elif len(self.children) == 1:
+            return f"{self.name} ({self.children[0].value()})"
+            pass
+        elif len(self.children) == 0:
+            return self.name
+    pass
+
+
+def operator(left, right, op):
+    nodes = [left, right]
+    op_node = SigNode(op)
+    op_node.type = left.type.type_check(left.type, right.type, op)
+    for node in nodes:
+        if isinstance(node, SigNode):
+            node.parent = op_node
+        elif isinstance(node, _SignalBase) or isinstance(node, Type):
+            SigNode(node.value(), parent=op_node)
+        else:
+            raise TypeError(f"Unexpected type {type(node)}. Expected SigNode, _SignalBase, or Type")
+    return op_node
+    pass
 
 
 @dataclass
@@ -109,14 +167,18 @@ class Signal(_SignalBase):
         # TODO: Type checking for name and type
         self.name = name
         self.type = _type
+        self.next = None
 
         if default is not None and not isinstance(default, _type):
             raise TypeError(f'Unexpected type for default (expected {_type} but found {type_(default)})')
 
         self.default = default
 
+    def value(self):
+        return self.name
+
     def serialize(self):
-        return f"{_SignalBase.serialize(self)}{f' := {self.default.value}' if self.default is not None else f''}"
+        return f"{_SignalBase.serialize(self)}{f' := {self.default.value()}' if self.default is not None else f''}"
 
 
 class Direction(IntEnum):
@@ -140,11 +202,18 @@ def type_(arg):
 
 @type_
 class std_logic(Type):
+    casts = ()
+
     def __init__(self, value):
-        self.value = value
+        self._value = value
 
     def __contains__(self, item):
         return str(item) in ['0', '1', 'X']
+
+    def value(self):
+        return f"\'{self._value}\'"
+
+
 
 
 std_logic_vector: Callable[[int, int], Array] = lambda b1, b2: Array("std_logic_vector", (b1, b2))
