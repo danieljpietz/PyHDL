@@ -1,11 +1,11 @@
 from .pyhdl import Entity, Architecture
 from .types import enforce_types
-from typing import Optional
+from typing import Optional, Union
+from os import PathLike
 from datetime import datetime
-
+from .meta import __version__
 
 def preamble():
-    from .__init__ import __version__
     return f"-- Generated using {__package__} version {__version__}" \
            f" on {datetime.now().strftime('%m/%d/%Y at %H:%M:%S')} \n"
 
@@ -18,7 +18,8 @@ def libraries():
 @enforce_types
 class Module:
 
-    def __init__(self, entity: Entity, architecture: Architecture, filepath: Optional[str] = None):
+    def __init__(self, entity: Entity, architecture: Architecture,
+                 filepath: Optional[Optional[Union[Union[str, bytes, PathLike[str], PathLike[bytes]]]]]):
         if architecture.entity != entity:
             raise ValueError("Mismatched Entity Architecture Pair")
         self.entity = entity
@@ -28,7 +29,7 @@ class Module:
     def serialize(self):
         return f"{preamble()}\n{libraries()}\n\n{self.entity.serialize()}\n\n{self.architecture.serialize()}"
 
-    def writeout(self, filepath=None):
+    def writeout(self, filepath: Optional[Union[Union[str, bytes, PathLike[str], PathLike[bytes]]]] = None):
         if self.filepath != filepath:
             if filepath is not None:
                 raise ValueError("Filepath mismatch.")
@@ -38,9 +39,10 @@ class Module:
             else:
                 raise ValueError("No filepath")
 
-        with open(self.filepath, "w") as f:
+        with open(self.filepath, 'w') as f:
             f.write(self.serialize())
 
 
-def writeout(entity: Entity, architecture: Architecture, filepath: str):
-    Module(entity, architecture, filepath).writeout()
+def writeout(entity: Entity, architecture: Architecture,
+             filepath: Union[Union[str, bytes, PathLike[str], PathLike[bytes]]]):
+    Module(entity, architecture, filepath=filepath).writeout()

@@ -39,6 +39,8 @@ def entity(Target):
                 raise TypeError(f"{signal.__class__.__name__} object not derived from PortSignal")
     elif target.interfaces is not None and not isinstance(target.interfaces, Iterable):
         raise TypeError(f"{target.interfaces.__class__.__name__} must be Iterable or None")
+    for signal in target.interfaces:
+        setattr(target, signal.name, signal)
     return target
 
 
@@ -65,6 +67,8 @@ def architecture(Target):
                     target_new_signals.append(signal)
     for signal in target_new_signals:
         Target.add_signal(Target, signal)
+    for signal in Target.entity.interfaces:
+        setattr(Target, signal.name, signal)
     target = Target()
     get_architecture_processes(target)
     return target

@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from enum import IntEnum
 import typing
-from typing import Tuple, Callable, Optional, Type
+from typing import Tuple, List, Optional
 from abc import abstractmethod
 from contextlib import suppress
 from functools import wraps
@@ -62,11 +62,10 @@ def enforce_types(callable):
 
     return decorate(callable)
 
-
 @dataclass
 class Type(_PHDLObj):
     type_str: str
-    casts: Optional[Tuple[Type]]
+    casts: Optional[Tuple[typing.TypeVar('T')]] = None
 
     def __new__(cls, v):
         if not cls.__contains__(cls, v):
@@ -95,19 +94,37 @@ class Type(_PHDLObj):
 @enforce_types
 @dataclass
 class Array(Type):
-    bounds: Tuple[int, int]
+    bounds: Optional[Tuple[int, int]] = None
+    values: Optional[List] = None
+
+    def __index__(self, ind):
+        if ind < min(self.bounds) or ind >= max(self.bounds):
+            raise IndexError(f"Index {ind} is out of range {self.bounds}")
+        print('x')
 
     def serialize(self):
-        return f"{self.type} ({max(self.bounds)} downto {min(self.bounds)})"
+        return f"{self.name} ({max(self.bounds)} downto {min(self.bounds)})"
 
 
 @dataclass
 class _SignalBase(_PHDLObj):
-    name: str
-    type: Type
+
+    def __init__(self, name: str, type: Type):
+        self.name = name
+        self.type = type
+        self.next: _SignalBase = None
+        if issubclass(self.type, Array):
+            self.values = [Signal(f"{self.name}({i})", self.type.type) for i in range(min(self.type.bounds), max(self.type.bounds))]
 
     def serialize(self):
         return f"{self.name} : {self.type.serialize(self.type)}"
+
+    def __getitem__(self, item):
+        if issubclass(self.type, Array):
+            return self.values[item]
+            pass
+        else:
+            raise TypeError(f"Cannot index non array type {self.type}")
 
     def __add__(self, other):
         return operator(self, other, '+')
@@ -141,6 +158,7 @@ class SigNode(Node, _SignalBase):
             pass
         elif len(self.children) == 0:
             return self.name
+
     pass
 
 
@@ -161,15 +179,12 @@ def operator(left, right, op):
 
 @dataclass
 class Signal(_SignalBase):
-    _SignalBase.type = None
+    _SignalBase.type: Type = None
 
-    def __init__(self, name, _type, default: Optional[_SignalBase.type] = None):
-        # TODO: Type checking for name and type
-        self.name = name
-        self.type = _type
-        self.next = None
+    def __init__(self, name: str, _type: str, default: Optional[_SignalBase.type] = None):
+        super().__init__(name, _type)
 
-        if default is not None and not isinstance(default, _type):
+        if not isinstance(default, _type) and default is not None:
             raise TypeError(f'Unexpected type for default (expected {_type} but found {type_(default)})')
 
         self.default = default
@@ -192,7 +207,16 @@ class Direction(IntEnum):
 
 @dataclass
 class PortSignal(_SignalBase):
-    direction: Direction = None
+
+    def __init__(self, name: str, _type: Type, direction: Direction):
+        super().__init__(name, _type)
+        self.direction = direction
+
+    def value(self):
+        if self.direction != Direction.Out:
+            return self.name
+        else:
+            raise TypeError("Cannot read value from output pin")
 
 
 def type_(arg):
@@ -214,6 +238,13 @@ class std_logic(Type):
         return f"\'{self._value}\'"
 
 
+def std_logic_vector(_bounds: Tuple[int, int]):
 
+    class _std_logic_vector(Array):
+        bounds = _bounds
+        type = std_logic
+        name = 'std_logic_vector'
+        pass
 
-std_logic_vector: Callable[[int, int], Array] = lambda b1, b2: Array("std_logic_vector", (b1, b2))
+    return _std_logic_vector
+    pass
