@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from enum import IntEnum
 import typing
-from typing import Tuple, List, Optional
+from typing import Tuple, List, Optional, Dict
 from abc import abstractmethod
 from contextlib import suppress
 from functools import wraps
@@ -62,10 +62,12 @@ def enforce_types(callable):
 
     return decorate(callable)
 
+
 @dataclass
 class Type(_PHDLObj):
     type_str: str
     casts: Optional[Tuple[typing.TypeVar('T')]] = None
+    requires: Optional[Dict] = None
 
     def __new__(cls, v):
         if not cls.__contains__(cls, v):
@@ -107,14 +109,15 @@ class Array(Type):
 
 
 @dataclass
-class _SignalBase(_PHDLObj):
+class SignalBase(_PHDLObj):
 
     def __init__(self, name: str, type: Type):
         self.name = name
         self.type = type
-        self.next: _SignalBase = None
+        self.next: SignalBase = None
         if issubclass(self.type, Array):
-            self.values = [Signal(f"{self.name}({i})", self.type.type) for i in range(min(self.type.bounds), max(self.type.bounds))]
+            self.values = [Signal(f"{self.name}({i})", self.type.type) for i in
+                           range(min(self.type.bounds), max(self.type.bounds))]
 
     def serialize(self):
         return f"{self.name} : {self.type.serialize(self.type)}"
@@ -126,8 +129,21 @@ class _SignalBase(_PHDLObj):
         else:
             raise TypeError(f"Cannot index non array type {self.type}")
 
+    def __len__(self):
+        if issubclass(self.type, Array):
+            return len(self.values)
+            pass
+        else:
+            raise TypeError(f"Cannot index non array type {self.type}")
+
     def __add__(self, other):
         return operator(self, other, '+')
+
+    def __sub__(self, other):
+        return operator(self, other, '-')
+
+    def __mul__(self, other):
+        return operator(self, other, '*')
 
     def __and__(self, other):
         return operator(self, other, 'and')
@@ -138,21 +154,30 @@ class _SignalBase(_PHDLObj):
     def __xor__(self, other):
         return operator(self, other, 'xor')
 
-    def __sub__(self, other):
-        return operator(self, other, '-')
+    def __ne__(self, other):
+        return operator(self, other, '!=', conditional=True)
+
+    def __eq__(self, other):
+        return operator(self, other, '=', conditional=True)
+
+    def __gt__(self, other):
+        return operator(self, other, '>', conditional=True)
+
+    def __lt__(self, other):
+        return operator(self, other, '<', conditional=True)
+
+    def __ge__(self, other):
+        return operator(self, other, '>=', conditional=True)
+
+    def __le__(self, other):
+        return operator(self, other, '<=', conditional=True)
 
 
-class SigNode(Node, _SignalBase):
+class SigNode(Node, SignalBase):
 
     def value(self):
-        if len(self.children) >= 2:
-            children = []
-            for child in self.children:
-                if len(child.children) == 2:
-                    children.append(f"({child.value()})")
-                else:
-                    children.append(child.value())
-            return f"{children[0]} {self.name} {children[1]}"
+        if len(self.children) == 2:
+            return f"({self.children[0].value()} {self.name} {self.children[1].value()})"
         elif len(self.children) == 1:
             return f"{self.name} ({self.children[0].value()})"
             pass
@@ -162,26 +187,35 @@ class SigNode(Node, _SignalBase):
     pass
 
 
-def operator(left, right, op):
+class Condition(SigNode):
+    pass
+
+
+def operator(left, right, op, conditional=False):
+    if conditional:
+        NodeClass = Condition
+    else:
+        NodeClass = SigNode
+
     nodes = [left, right]
-    op_node = SigNode(op)
+    op_node = NodeClass(op)
     op_node.type = left.type.type_check(left.type, right.type, op)
     for node in nodes:
-        if isinstance(node, SigNode):
+        if isinstance(node, NodeClass):
             node.parent = op_node
-        elif isinstance(node, _SignalBase) or isinstance(node, Type):
-            SigNode(node.value(), parent=op_node)
+        elif isinstance(node, SignalBase) or isinstance(node, Type):
+            NodeClass(node.value(), parent=op_node)
         else:
-            raise TypeError(f"Unexpected type {type(node)}. Expected SigNode, _SignalBase, or Type")
+            raise TypeError(f"Unexpected type {type(node)}. Expected SigNode, SignalBase, or Type")
     return op_node
     pass
 
 
 @dataclass
-class Signal(_SignalBase):
-    _SignalBase.type: Type = None
+class Signal(SignalBase):
+    SignalBase.type: Type = None
 
-    def __init__(self, name: str, _type: str, default: Optional[_SignalBase.type] = None):
+    def __init__(self, name: str, _type: str, default: Optional[SignalBase.type] = None):
         super().__init__(name, _type)
 
         if not isinstance(default, _type) and default is not None:
@@ -189,11 +223,14 @@ class Signal(_SignalBase):
 
         self.default = default
 
+    def __eq__(self, other):
+        return SignalBase.__eq__(self, other)
+
     def value(self):
         return self.name
 
     def serialize(self):
-        return f"{_SignalBase.serialize(self)}{f' := {self.default.value()}' if self.default is not None else f''}"
+        return f"{SignalBase.serialize(self)}{f' := {self.default.value()}' if self.default is not None else f''}"
 
 
 class Direction(IntEnum):
@@ -206,7 +243,7 @@ class Direction(IntEnum):
 
 
 @dataclass
-class PortSignal(_SignalBase):
+class PortSignal(SignalBase):
 
     def __init__(self, name: str, _type: Type, direction: Direction):
         super().__init__(name, _type)
@@ -227,6 +264,7 @@ def type_(arg):
 @type_
 class std_logic(Type):
     casts = ()
+    requires = {'IEEE': ['std_logic_1164.all']}
 
     def __init__(self, value):
         self._value = value
@@ -238,13 +276,31 @@ class std_logic(Type):
         return f"\'{self._value}\'"
 
 
+def array(_name, base_type, range, **kwargs):
+    class _arr(Array):
+        bounds = range
+        type = base_type
+        name = _name
+        if 'requires' in kwargs:
+            requires = kwargs['requires']
+
+    return _arr
+
+
 def std_logic_vector(_bounds: Tuple[int, int]):
+    return array("std_logic_vector", std_logic, _bounds, requires={})
 
-    class _std_logic_vector(Array):
-        bounds = _bounds
-        type = std_logic
-        name = 'std_logic_vector'
-        pass
 
-    return _std_logic_vector
-    pass
+@type_
+class integer(Type):
+    casts = ()
+    requires = {}
+
+    def __init__(self, value):
+        self._value = int(value)
+
+    def __contains__(self, item):
+        return isinstance(item, (int, integer))
+
+    def value(self):
+        return f"{self._value}"

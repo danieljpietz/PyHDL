@@ -10,12 +10,21 @@ class MyEntity(Entity):
 class MyArchitecture(Architecture):
     entity = MyEntity
 
-    sig = Signal("sig", std_logic)
+    sig = Signal("sig", integer)
+    sig2 = Signal("sig2", integer)
     sig_vec = Signal("sig_vec", std_logic_vector((0, 4)))
-    #signalVectors = [Signal(f"sig{i}", std_logic, std_logic(i % 2)) for i in range(4)]
+    custom = Signal("custom", array("MyArray", integer, (0, 5)))
 
     @process(entity.clk)
     def my_process(self):
-        self.output.next = self.clk + self.clk + self.clk
-        self.sig_vec[0].next = self.sig_vec[1]
+        self.sig.next = self.sig * self.sig2
+        self.custom[0].next = self.custom[1]
+
+        @IF(self.my_process, self.sig == self.sig2)
+        def first_if():
+            self.custom[1].next = self.custom[0]
+            pass
+
         pass
+
+

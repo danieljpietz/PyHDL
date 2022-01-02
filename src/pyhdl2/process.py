@@ -3,9 +3,10 @@ from typing import List, Optional, Callable
 from collections.abc import Iterable
 import itertools
 
+
 class Process(_PHDLObj):
-    def __init__(self, func: Callable[[], None], sensitivity: Optional[List[Signal]] = None):
-        self.func = func
+    def __init__(self, sensitivity: Optional[List[Signal]] = None):
+        self.func = None
         self.sensitivity = sensitivity
         self.name: str
         self.proc_strs: List[str] = []
@@ -17,19 +18,13 @@ class Process(_PHDLObj):
         return self
         pass
 
+    def get_signals(self):
+        return list(itertools.chain(*[self.architecture.signals, self.architecture.entity.interfaces]))
+
     def invoke(self):
-        for signal in list(itertools.chain(*[self.architecture.signals, self.architecture.entity.interfaces])):
-            if issubclass(signal.type, Array):
-                for sig in signal:
-                    if sig.next is not None:
-                        raise ValueError("No signals should have a next component outside of a process. "
-                                         "You probably set it somewhere else in your architecture")
-                pass
-            if signal.next is not None:
-                raise ValueError("No signals should have a next component outside of a process. "
-                                 "You probably set it somewhere else in your architecture")
+        self.sanitize_signals()
         self.func(self.architecture)
-        for signal in list(itertools.chain(*[self.architecture.signals, self.architecture.entity.interfaces])):
+        for signal in self.get_signals():
             if issubclass(signal.type, Array):
                 for sig in signal:
                     if sig.next is not None:
@@ -44,7 +39,17 @@ class Process(_PHDLObj):
 
         self.proc_str = ('\n'.join(self.proc_strs))
         self.architecture.processes.append(self)
-        pass
+
+    def sanitize_signals(self):
+        for signal in self.get_signals():
+            if issubclass(signal.type, Array):
+                for sig in signal:
+                    if sig.next is not None:
+                        raise ValueError("No signals should have a next component outside of a process. "
+                                         "You probably set it somewhere else in your architecture")
+            if signal.next is not None:
+                raise ValueError("No signals should have a next component outside of a process. "
+                                 "You probably set it somewhere else in your architecture")
 
     def process_signal(self, signal, array=True):
         if not type(signal.next) in signal.type.casts:
@@ -71,7 +76,4 @@ class Process(_PHDLObj):
 
 
 def process(sig=None):
-    def wrapper(self):
-        return self
-
-    return Process(wrapper, sig)
+    return Process(sig)

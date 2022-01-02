@@ -10,9 +10,11 @@ def preamble():
            f" on {datetime.now().strftime('%m/%d/%Y at %H:%M:%S')} \n"
 
 
-def libraries():
-    return f"library IEEE;\n" \
-           f"use IEEE.std_logic_1164.all;"
+def libraries(architecture):
+    nl = '\n'
+    return f'{nl}'.join([f"library {key};\n"
+                         f"{(f'{nl}'.join([f'use {key}.{package};' for package in architecture.libraries[key]]))}"
+                         for key in architecture.libraries.keys()])
 
 
 @enforce_types
@@ -27,7 +29,7 @@ class Module:
         self.filepath = filepath
 
     def serialize(self):
-        return f"{preamble()}\n{libraries()}\n\n{self.entity.serialize()}\n\n{self.architecture.serialize()}"
+        return f"{preamble()}\n{libraries(self.architecture)}\n\n{self.entity.serialize()}\n\n{self.architecture.serialize()}"
 
     def writeout(self, filepath: Optional[Union[Union[str, bytes, PathLike[str], PathLike[bytes]]]] = None):
         if self.filepath != filepath:

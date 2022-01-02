@@ -1,7 +1,8 @@
-from .types import _PHDLObj, Signal, PortSignal, enforce_types
-from typing import List, Optional
+from .types import _PHDLObj, Signal, PortSignal, enforce_types, Array
+from typing import List, Optional, Dict
 from collections.abc import Iterable
 from .process import Process
+import itertools
 
 
 @enforce_types
@@ -53,6 +54,45 @@ def get_architecture_processes(target):
     pass
 
 
+def get_architecture_types(target):
+    for signal in list(itertools.chain(*[target.signals, target.entity.interfaces])):
+        if signal.type not in target.types:
+            target.types.append(signal.type)
+
+    customTypes = set()
+
+    for type in target.types:
+        if type.requires is not None:
+            for key in type.requires.keys():
+                if key in target.libraries:
+                    for newkey in type.requires[key]:
+                        if newkey not in target.libraries[key]:
+                            target.libraries[key].add(newkey)
+                else:
+                    target.libraries[key] = set([k for k in type.requires[key]]) \
+                        if isinstance(type.requires[key], (list, tuple)) else [type.requires[key]]
+        else:
+            customTypes.add(type)
+    target.typestrings = generate_typestrings(customTypes)
+
+
+def generate_typestrings(types):
+    for outer_custom_type in types:
+        for inner_custom_type in types:
+            if inner_custom_type is outer_custom_type:
+                break
+            elif inner_custom_type.name == outer_custom_type.name:
+                if generate_typestring(inner_custom_type) != generate_typestring(outer_custom_type):
+                    raise ValueError (f"Found multiple definitions for type {inner_custom_type.name}.")
+    return '\n'.join(set([generate_typestring(custom_type) for custom_type in types]))
+    pass
+
+
+def generate_typestring(custom_type):
+    return f"type {custom_type.name} is array of {custom_type.type.__name__} ({max(custom_type.bounds)} " \
+           f"downto {min(custom_type.bounds)});" if issubclass(custom_type, Array) else ''
+
+
 def architecture(Target):
     if not isinstance(Target.entity, Entity):
         raise TypeError(f"{Target.entity.__class__.__name__} object not derived from Entity")
@@ -71,6 +111,7 @@ def architecture(Target):
         setattr(Target, signal.name, signal)
     target = Target()
     get_architecture_processes(target)
+    get_architecture_types(target)
     return target
     pass
 
@@ -80,6 +121,8 @@ class Architecture(_PHDLObj):
     entity: Entity
     signals: List[Signal] = []
     processes: List[Process] = []
+    libraries: Dict = {}
+    types: List = []
 
     def add_signal(self, sig):
         if isinstance(sig, Signal) and not isinstance(sig, PortSignal):
@@ -103,8 +146,11 @@ class Architecture(_PHDLObj):
         _processes = '\n\n'.join([process.serialize() for process in self.processes])
         _processes = '\t' + _processes.replace('\n', '\n\t')
 
+        _typestrings = self.typestrings.replace('\n', '\n\t')
+
         return f"architecture rtl of {self.entity.name} is\n" \
-               f"\t{_signals}\n" \
+               f"\n\t{_typestrings}\n\n" \
+               f"\t{_signals}\n\n" \
                f"begin\n" \
                f"{_processes}\n" \
                f"end architecture rtl;"
