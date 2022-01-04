@@ -28,7 +28,6 @@ def test_create_architecture():
             def my_if():
                 self.sig3[0].next = self.sig3[1]
 
-    print(MyArchitecture.value())
     MyArchitecture.value()
 
 
