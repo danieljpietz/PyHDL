@@ -24,6 +24,7 @@ def test_entity_no_subclass():
         class MyEntity(object):
             interfaces = ()
 
+
 def test_serialize_entity():
     @entity
     class MyEntity(Entity):
