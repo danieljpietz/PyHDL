@@ -1,4 +1,4 @@
-from typing import Callable, List, Union, Optional
+from typing import Callable, List, Union, Optional, Any
 from .core import _PHDLObj
 from .type import isarray
 from .architecture import Architecture
@@ -80,7 +80,7 @@ class Else(Conditional):
     def __init__(self, architecture: Architecture, process: Process, condition: Optional[ArithmeticStack],
                  parent: Optional[Conditional]):
         super().__init__(architecture, process, condition)
-        self.parent: Conditional
+        self.parent: Any
         if self.parent is not None:
             self.parent = parent
 

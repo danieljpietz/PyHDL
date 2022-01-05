@@ -1,8 +1,9 @@
 from .core import _PHDLObj
 from typing import Optional, Tuple, List, Callable, Union, Any
-from .type import isarray
+from .type import isarray, isrecord
 from .signal import Signal, PortSignal, Direction
 from .check import check_name
+
 
 class Process(_PHDLObj):
     def __init__(self, sensitivity: Optional[Union[Tuple[Signal], Signal, None]] = None):
@@ -33,6 +34,13 @@ class Process(_PHDLObj):
         for signal in self.get_signals():
             if isarray(signal.type):
                 for sig in signal:
+                    if sig.next is not None:
+                        if isinstance(signal, PortSignal) and signal.direction == Direction.In:
+                            raise TypeError("Cannot make assignment to input signal")
+                        self.process_signal(sig)
+            elif isrecord(signal.type):
+                for key in signal.type.__annotations__:
+                    sig = signal.__dict__[key]
                     if sig.next is not None:
                         if isinstance(signal, PortSignal) and signal.direction == Direction.In:
                             raise TypeError("Cannot make assignment to input signal")
@@ -77,7 +85,7 @@ class Process(_PHDLObj):
         _ser = f"{self.name}: process {_sensitivity}\n" \
                f"begin \n" \
                f"{self.proc_str}\n" \
-               f"{_ifs}\n" \
+               f"{_ifs}" \
                f"end process;"
         return _ser
 

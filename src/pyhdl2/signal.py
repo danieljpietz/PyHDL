@@ -1,4 +1,4 @@
-from .type import isarray
+from .type import isarray, isrecord
 from typing import Union, Tuple, Any, Type
 from abc import abstractmethod
 from .arithmetic import Operable
@@ -16,6 +16,10 @@ class _Signal(Operable):
         if isarray(self.type):
             self.values = [Signal(f"{self.name}({i})", self.type.base) for i in
                            range(min(self.type.bounds), max(self.type.bounds))]
+        elif isrecord(self.type):
+            for key in self.type.__annotations__:
+                setattr(self, key, Signal(f"{self.name}.{key}", self.type.__annotations__[key]))
+
 
     @abstractmethod
     def value(self):
@@ -45,8 +49,8 @@ class Signal(_Signal):
 
         if default is not None and not isinstance(default, _type):
             raise TypeError(f'Unexpected type for default (expected {_type} but found {type(self).__name__})')
-
         self.default = default
+
 
     def value(self):
         return self.name

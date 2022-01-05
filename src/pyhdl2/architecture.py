@@ -1,6 +1,6 @@
 from .core import _PHDLObj
 from .entity import Entity
-from .signal import _Signal, Signal, PortSignal
+from .signal import Signal, PortSignal
 from typing import List, Dict, Tuple
 from .check import check_name
 from .process import Process
