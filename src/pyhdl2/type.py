@@ -109,7 +109,7 @@ def record(arg):
 class Record(_Type):
 
     def value(self):
-        values = ',\n'.join([f"{key} => {self.__dict__[key].value()}" for key in self.__annotations__])
+        values = ','.join([f"{key} => {self.__dict__[key].value()}" for key in self.__annotations__])
         return f"({values})"
 
     pass

@@ -25,4 +25,3 @@ def test_generate_module(tmpdir):
 
     file = tmpdir.join('output.vhd')
     write_out(MyEntity, MyArchitecture, file.strpath)
-    pass

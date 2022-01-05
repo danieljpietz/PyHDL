@@ -46,7 +46,7 @@ class Operable(_PHDLObj):
         return operator(self, None, '-')
 
     def neg(self):
-        return operator(self, None, '!')
+        return operator(self, None, 'not ')
 
 
 class ArithmeticStack(Operable):

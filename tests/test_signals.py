@@ -62,7 +62,7 @@ def test_signal_arithmetic():
     assert (sig1 == sig2).value() == 'sig1 = sig2'
     assert (sig1 != sig2).value() == 'sig1 != sig2'
     assert (-sig1).value() == "-sig1"
-    assert (sig1 == sig2).neg().value() == '!(sig1 = sig2)'
+    assert (sig1 == sig2).neg().value() == 'not (sig1 = sig2)'
 
 
 def test_signal_arithmetic_op_check():

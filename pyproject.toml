@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=42.0", "wheel", "py_mini_racer"]
+requires = ["setuptools>=42.0", "wheel", "py-mini-racer"]
 build-backend = "setuptools.build_meta"
 
 [tool.pytest.ini_options]

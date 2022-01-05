@@ -9,14 +9,14 @@ class Entity(_PHDLObj):
     name: Optional[str]
     interfaces: Tuple[PortSignal]
 
-    def value(self):
+    def interface_string(self):
         nl = '\n\t\t   '
-
-        _interfaces = f"{f';{nl}'.join([f'{signal.name} : {signal.direction} {signal.type.type_name}' for signal in self.interfaces])}" \
+        return f"{f';{nl}'.join([f'{signal.name} : {signal.direction} {signal.type.type_name}' for signal in self.interfaces])}" \
             if len(self.interfaces) > 0 else " "
 
+    def value(self):
         return f"entity {self.name} is\n" \
-               f"\t port ({_interfaces});\n" \
+               f"\t port ({self.interface_string()});\n" \
                f"end entity {self.name};"
 
 

@@ -44,11 +44,6 @@ def test_create_architecture():
             def my_if():
                 self.sig3[1].next = self.sig3[2]
 
-    print()
-    print(MyArchitecture.value())
-    print(MyArchitecture2.value())
-    print()
-
 
 def test_architecture_forget_subclass():
     with pytest.raises(TypeError):

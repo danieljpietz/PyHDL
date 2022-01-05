@@ -31,6 +31,12 @@ class Process(_PHDLObj):
         self.func(self.architecture)
         _set_current_process(None)
 
+        self.process_signals()
+
+        self.proc_str = ('\n'.join(self.proc_strs))
+        self.architecture.processes.append(self)
+
+    def process_signals(self):
         for signal in self.get_signals():
             if isarray(signal.type):
                 for sig in signal:
@@ -50,9 +56,6 @@ class Process(_PHDLObj):
                     if isinstance(signal, PortSignal) and signal.direction == Direction.In:
                         raise TypeError("Cannot make assignment to input signal")
                     self.process_signal(signal)
-
-        self.proc_str = ('\n'.join(self.proc_strs))
-        self.architecture.processes.append(self)
 
     def add_if(self, IF):
         self.if_statements.append(IF)

@@ -11,15 +11,13 @@ def test_create_record():
 
     x = MyRecord(std_logic('1'), std_logic('0'))
 
-    print()
-    print(x.value())
-
     @entity
     class MyEnt(Entity):
         interfaces = (PortSignal('clk', std_logic, Direction.In),)
+    pass
 
     @architecture
-    class MyArch(Architecture):
+    class MyArch_Record(Architecture):
         entity = MyEnt
 
         sig = Signal("sig", MyRecord)
@@ -29,7 +27,3 @@ def test_create_record():
         def my_process(self):
             self.sig.v.next = self.sig2
             self.sig2.next = self.sig2.neg()
-
-    print()
-    print(MyArch.value())
-    print()
