@@ -1,4 +1,4 @@
-from .type import Type, new_type, Array, Record
+from .type import Type, new_type, Array, Record, record
 from .types import std_logic, std_logic_vector, integer
 from .signal import Signal, PortSignal, Direction
 from .entity import Entity, entity

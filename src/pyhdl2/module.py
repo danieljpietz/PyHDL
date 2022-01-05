@@ -1,9 +1,12 @@
-from typing import Optional, Union
+from typing import Union
 from os import PathLike
 from datetime import datetime
 from .meta import __version__
 from .entity import Entity
 from .architecture import Architecture
+from py_mini_racer import MiniRacer
+import pkgutil
+
 
 def preamble():
     return f"-- Generated using {__package__} version {__version__}" \
@@ -15,6 +18,12 @@ def libraries(architecture):
     return f'{nl}'.join([f"library {key};\n"
                          f"{(f'{nl}'.join([f'use {key}.{package};' for package in architecture.libraries[key]]))}"
                          for key in architecture.libraries.keys()])
+
+def beautify(input: str):
+    script = pkgutil.get_data(__name__, "beautifier/beautify.js").decode("utf-8")
+    script += f"f({input.__repr__()});"
+    return MiniRacer().eval(script)
+
 
 
 class Module:
@@ -40,8 +49,11 @@ class Module:
             else:
                 raise ValueError("No filepath")
 
+        raw = self.serialize()
+        pretty = beautify(raw)
+
         with open(self.filepath, 'w') as f:
-            f.write(self.serialize())
+            f.write(pretty)
 
 
 def write_out(entity: Entity, architecture: Architecture,

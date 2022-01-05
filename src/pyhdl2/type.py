@@ -3,6 +3,7 @@ import typing
 from typing import Optional, Tuple, Dict, Any
 from .arithmetic import Operable
 from .check import check_name
+from dataclasses import dataclass
 
 
 class _Type:
@@ -17,7 +18,7 @@ class _Type:
 
 class Type(_Type, Operable):
 
-    def __new__(cls: typing.Type[Any], v: Any=None):
+    def __new__(cls: typing.Type[Any], v: Any = None):
         if v is not None and not cls.__contains__(cls, v):
             raise ValueError(f"{v} not in the domain of {cls}")
         cls.type = cls
@@ -101,7 +102,16 @@ def Array(_name: str, _base_type: typing.Type[Type], _bounds: Tuple[int, int],
     return _arr
 
 
+def record(arg):
+    return dataclass(new_type(arg), eq=False)
+
+
 class Record(_Type):
+
+    def value(self):
+        values = ',\n'.join([f"{key} => {self.__dict__[key].value()}" for key in self.__annotations__])
+        return f"({values})"
+
     pass
 
 
@@ -119,7 +129,6 @@ def record_typestring(custom_type: Any):
            + f"\nend record {custom_type.__name__};"
 
 
-
 def generate_typestrings(types):
     for outer_custom_type in types:
         for inner_custom_type in types:
@@ -132,10 +141,16 @@ def generate_typestrings(types):
     pass
 
 
+def array_typestring(custom_type: Any):
+    return f"type {custom_type.name} is array of {custom_type.base.type_name} " \
+           f"({custom_type.bounds[0]} {'down' if custom_type.bounds[0] > custom_type.bounds[1] else ''}to " \
+           f"{custom_type.bounds[1]});"
+
+
 def generate_typestring(custom_type: Any):
-    if not isrecord(custom_type):
-        return f"type {custom_type.name} is array of {custom_type.base.type_name} " \
-               f"({custom_type.bounds[0]} {'down' if custom_type.bounds[0] > custom_type.bounds[1] else ''}to " \
-               f"{custom_type.bounds[1]});" if isarray(custom_type) else ''
-    else:
+    if isarray(custom_type):
+        return array_typestring(custom_type)
+    elif isrecord(custom_type):
         return record_typestring(custom_type)
+    else:
+        return ''

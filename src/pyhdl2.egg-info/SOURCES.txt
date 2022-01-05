@@ -13,6 +13,7 @@ src/pyhdl2/entity.py
 src/pyhdl2/meta.py
 src/pyhdl2/module.py
 src/pyhdl2/process.py
+src/pyhdl2/record.py
 src/pyhdl2/signal.py
 src/pyhdl2/type.py
 src/pyhdl2/types.py

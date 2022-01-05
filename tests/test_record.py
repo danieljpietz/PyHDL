@@ -1,20 +1,22 @@
 import pytest
 from pyhdl2 import *
 
+
 def test_create_record():
-
-
-    @new_type
+    @record
     class MyRecord(Record):
         v: std_logic
-        v1: std_logic_vector(3, 0)
+        v1: std_logic
         pass
+
+    x = MyRecord(std_logic('1'), std_logic('0'))
+
+    print()
+    print(x.value())
 
     @entity
     class MyEnt(Entity):
         interfaces = (PortSignal('clk', std_logic, Direction.In),)
-
-
 
     @architecture
     class MyArch(Architecture):
@@ -27,7 +29,6 @@ def test_create_record():
         def my_process(self):
             self.sig.v.next = self.sig2
             self.sig2.next = self.sig2.neg()
-
 
     print()
     print(MyArch.value())
