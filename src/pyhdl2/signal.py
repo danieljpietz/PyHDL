@@ -71,8 +71,11 @@ class PortSignal(_Signal):
         super().__init__(name, _type)
         self.direction = direction
 
-    def value(self):
-        if self.direction != Direction.Out:
+    def __repr__(self):
+        return f"{type(self)}({self.value(skip_direction_check=True)})"
+
+    def value(self, skip_direction_check=False):
+        if skip_direction_check or self.direction != Direction.Out:
             return self.name
         else:
             raise TypeError("Cannot read value from output pin")

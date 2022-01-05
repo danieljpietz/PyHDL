@@ -1,6 +1,6 @@
 from .core import _PHDLObj
 from .entity import Entity
-from .signal import Signal, PortSignal
+from .signal import _Signal, Signal, PortSignal
 from typing import List, Dict, Tuple
 from .check import check_name
 from .process import Process
@@ -18,13 +18,13 @@ class Architecture(_PHDLObj):
     name: str
 
     def add_signal(self, sig):
-        if isinstance(sig, Signal) and not isinstance(sig, PortSignal):
+        if isinstance(sig, PortSignal):
+            raise TypeError(f"{sig.__class__.__name__} object cannot be derived from PortSignal")
+        elif isinstance(sig, Signal):
             for signal in self.signals:
                 if signal.name == sig.name:
                     raise ValueError("Found duplicate signal {}".format(signal.name))
             self.signals.append(sig)
-        elif isinstance(sig, PortSignal):
-            raise TypeError(f"{sig.__class__.__name__} object cannot be derived from PortSignal")
         else:
             raise TypeError(f"{sig.__class__.__name__} object not derived from Signal")
 

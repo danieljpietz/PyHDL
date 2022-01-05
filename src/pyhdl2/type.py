@@ -17,8 +17,8 @@ class _Type:
 
 class Type(_Type, Operable):
 
-    def __new__(cls: typing.Type[Any], v: Any):
-        if not cls.__contains__(cls, v):
+    def __new__(cls: typing.Type[Any], v: Any=None):
+        if v is not None and not cls.__contains__(cls, v):
             raise ValueError(f"{v} not in the domain of {cls}")
         cls.type = cls
         return super(Type, cls).__new__(cls)
