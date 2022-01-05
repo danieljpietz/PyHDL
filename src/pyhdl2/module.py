@@ -7,7 +7,6 @@ from .architecture import Architecture
 from py_mini_racer import MiniRacer
 import pkgutil
 
-
 def preamble():
     return f"-- Generated using {__package__} version {__version__}" \
            f" on {datetime.now().strftime('%m/%d/%Y at %H:%M:%S')} \n"

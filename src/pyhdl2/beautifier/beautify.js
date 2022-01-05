@@ -1156,11 +1156,12 @@ const localStorageSettingKey = "settings";
 
         //onLoad();
         var beautifierSettings;
-        var compress; 
-        function f(input) {
-            var no_format = false;
+        var compress;
+        var no_format = false;
             var remove_lines = false;
             var mix_letter = false;
+        function f(input) {
+
 
             
 
@@ -1173,10 +1174,10 @@ const localStorageSettingKey = "settings";
                     "isAll": false,
                     "mode": "",
                     "keyWords": [],
-                    "alignComments": false
+                    "alignComments": true
                 },
-                "KeywordCase": "UpperCase",
-                "TypeNameCase": "UpperCase",
+                "KeywordCase": "LowerCase",
+                "TypeNameCase": "LowerCase",
                 "Indentation": "\t",
                 "NewLineSettings": {
                     "newLineAfter": [
@@ -1198,10 +1199,10 @@ const localStorageSettingKey = "settings";
                         "isAll": false,
                         "mode": "",
                         "keyWords": [],
-                        "alignComments": false
+                        "alignComments": true
                     },
-                    "KeywordCase": "UpperCase",
-                    "TypeNameCase": "UpperCase",
+                    "KeywordCase": "LowerCase",
+                    "TypeNameCase": "LowerCase",
                     "Indentation": "\t",
                     "NewLineSettings": {
                         "newLineAfter": [
@@ -1213,13 +1214,11 @@ const localStorageSettingKey = "settings";
                     "EndOfLine": "\n",
                     "AddNewLine": true
                 },
-                "removeLines": false,
+                "removeLines": true,
                 "compress": false,
                 "mixLetter": false
             };
-            //saveSetting(vhdlSettings);
-
-            return beautify(input, beautifierSettings);
+            return beautify(input, beautifierSettings).replace(/(\r\n)*[ \t]*\r\n/g, '\r\n');
         }
 
         var indentation = "\t";

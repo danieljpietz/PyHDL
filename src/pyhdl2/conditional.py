@@ -81,8 +81,7 @@ class Else(Conditional):
                  parent: Optional[Conditional]):
         super().__init__(architecture, process, condition)
         self.parent: Any
-        if self.parent is not None:
-            self.parent = parent
+        self.parent = parent
 
     def __call__(self, func: Callable[[], None]):
         # This is
