@@ -28,7 +28,26 @@ def test_create_architecture():
             def my_if():
                 self.sig3[0].next = self.sig3[1]
 
-    MyArchitecture.value()
+    @architecture
+    class MyArchitecture2(Architecture):
+        entity = MyEntity
+
+        sig = Signal("sig", std_logic)
+        sig2 = Signal("sig2", std_logic_vector(0, 3))
+        sig3 = Signal("sig3", std_logic_vector(3, 0))
+
+        @process(entity.clk)
+        def my_process(self):
+            self.sig2.next = self.sig
+
+            @IF(self.entity.clk == std_logic(0))
+            def my_if():
+                self.sig3[1].next = self.sig3[2]
+
+    print()
+    print(MyArchitecture.value())
+    print(MyArchitecture2.value())
+    print()
 
 
 def test_architecture_forget_subclass():

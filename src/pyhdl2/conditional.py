@@ -69,7 +69,7 @@ class Conditional(_PHDLObj):
             tab = '\t'
             self.if_str = f"\t{self.func.__name__}: if {self.condition.value()} then \n" \
                           f"{f'{nl}'.join(self._if_strs)}" \
-                          f"{f'{nl}'.join(self._elses)}" \
+                          f"{f'{nl}'.join(self._elses)}\n" \
                           f"end if {self.func.__name__};"
             self.if_str = self.if_str.replace(nl, f"{nl}{tab * (len(ifStack) + 1)}")
             return self.if_str
@@ -98,7 +98,7 @@ class Else(Conditional):
                       f"{f'{nl}'.join(self._if_strs)}"
         self.if_str = self.if_str.replace(nl, f"{nl}{tab * (len(ifStack))}")
         return self.if_str
-        pass
+
 
 ifStack: List[Conditional] = []
 ifLast: Optional[Conditional] = None

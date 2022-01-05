@@ -71,7 +71,8 @@ def new_type(arg: typing.Type[Type]):
         try:
             arg.__dict__[attr]
         except KeyError:
-            raise NotImplementedError(f"{arg} missing required attribute {attr}")
+            if not issubclass(arg, Record):
+                raise NotImplementedError(f"{arg} missing required attribute {attr}")
     arg.type_name = arg.__name__
     check_name(arg.type_name)
     return arg
@@ -100,12 +101,31 @@ def Array(_name: str, _base_type: typing.Type[Type], _bounds: Tuple[int, int],
     return _arr
 
 
+class Record(_Type):
+    pass
+
+
+def isrecord(cls):
+    try:
+        return issubclass(cls, Record)
+    except TypeError:
+        return isinstance(cls, Record)
+
+
+def record_typestring(custom_type: Any):
+    return f"type {custom_type.__name__} is record\n\t" + \
+           '\n\t'.join(
+               [f"{key} : {custom_type.__annotations__[key].type_name};" for key in custom_type.__annotations__]) \
+           + f"\nend record {custom_type.__name__};"
+
+
+
 def generate_typestrings(types):
     for outer_custom_type in types:
         for inner_custom_type in types:
             if inner_custom_type is outer_custom_type:
                 break
-            elif inner_custom_type.name == outer_custom_type.name:
+            elif inner_custom_type.type_name == outer_custom_type.type_name:
                 if generate_typestring(inner_custom_type) != generate_typestring(outer_custom_type):
                     raise ValueError(f"Found multiple definitions for type {inner_custom_type.name}.")
     return '\n'.join(set([generate_typestring(custom_type) for custom_type in types]))
@@ -113,6 +133,9 @@ def generate_typestrings(types):
 
 
 def generate_typestring(custom_type: Any):
-    return f"type {custom_type.name} is array of {custom_type.base.type_name} " \
-           f"({custom_type.bounds[0]} {'down' if custom_type.bounds[0] > custom_type.bounds[1] else ''}to " \
-           f"{custom_type.bounds[1]});" if isarray(custom_type) else ''
+    if not isrecord(custom_type):
+        return f"type {custom_type.name} is array of {custom_type.base.type_name} " \
+               f"({custom_type.bounds[0]} {'down' if custom_type.bounds[0] > custom_type.bounds[1] else ''}to " \
+               f"{custom_type.bounds[1]});" if isarray(custom_type) else ''
+    else:
+        return record_typestring(custom_type)

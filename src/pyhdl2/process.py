@@ -3,8 +3,6 @@ from typing import Optional, Tuple, List, Callable, Union, Any
 from .type import isarray
 from .signal import Signal, PortSignal, Direction
 from .check import check_name
-import itertools
-
 
 class Process(_PHDLObj):
     def __init__(self, sensitivity: Optional[Union[Tuple[Signal], Signal, None]] = None):

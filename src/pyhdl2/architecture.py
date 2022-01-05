@@ -48,6 +48,7 @@ class Architecture(_PHDLObj):
 
 
 def architecture(Target):
+    target = Target()
     if not issubclass(Target, Architecture):
         raise TypeError(f"Architecture {Target} must inherit Architecture")
     if not isinstance(Target.entity, Entity):
@@ -56,7 +57,7 @@ def architecture(Target):
         Target.name = f"{Target.entity.name}_rtl"
     check_name(Target.name)
 
-    Target.signals = []
+    target.signals = []
     target_new_signals = []
     for member in Target.__dict__:
         sig = Target.__dict__[member]
@@ -67,10 +68,10 @@ def architecture(Target):
                 for signal in sig:
                     target_new_signals.append(signal)
     for signal in target_new_signals:
-        Target.add_signal(Target, signal)
+        target.add_signal(signal)
     for signal in Target.entity.interfaces:
-        setattr(Target, signal.name, signal)
-    target = Target()
+        setattr(target, signal.name, signal)
+
     get_architecture_processes(target)
     get_architecture_types(target)
     return target
@@ -80,7 +81,7 @@ def get_architecture_processes(target):
     _architecture = type(target)
     for item in _architecture.__dict__:
         if isinstance(_architecture.__dict__[item], Process):
-            _architecture.__dict__[item].architecture = _architecture
+            _architecture.__dict__[item].architecture = target
             _architecture.__dict__[item].invoke()
 
 
