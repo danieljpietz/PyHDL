@@ -12,8 +12,8 @@ src/pyhdl2/core.py
 src/pyhdl2/entity.py
 src/pyhdl2/meta.py
 src/pyhdl2/module.py
+src/pyhdl2/package.py
 src/pyhdl2/process.py
-src/pyhdl2/record.py
 src/pyhdl2/signal.py
 src/pyhdl2/subprogram.py
 src/pyhdl2/type.py

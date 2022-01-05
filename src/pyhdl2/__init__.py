@@ -7,4 +7,5 @@ from .conditional import IF, ELSEIF, ELSE
 from .process import process
 from .module import Module, write_out
 from .subprogram import Procedure, procedure
+from .package import package
 
