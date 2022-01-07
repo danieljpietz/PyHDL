@@ -2,7 +2,7 @@ from pyhdl2 import *
 
 @module
 class EnumExample(Module):
-    EnumType = Enum("EnumType", "Option1", "Option2", "Option3")
+    EnumType = Enum("EnumType", ("Option1", "Option2", "Option3") )
 
     sig = Signal("sig", EnumType, EnumType("Option1"))
 

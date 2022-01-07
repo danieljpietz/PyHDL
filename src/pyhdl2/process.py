@@ -65,6 +65,10 @@ class Process(_PHDLObj):
         self.proc_strs.append(f"\t{signal.name} <= {signal.next.value()};")
         signal.next = None
 
+    def add_procedure_call(self, proc):
+        self.if_statements.append(proc)
+        pass
+
     def value(self):
         _sensitivity = f"({', '.join([signal.name for signal in self.sensitivity])})" \
             if isinstance(self.sensitivity, tuple) \

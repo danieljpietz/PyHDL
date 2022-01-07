@@ -1,7 +1,7 @@
 from .core import _PHDLObj, f_string_from_template, indent
 from .entity import Entity
 from .signal import Signal, PortSignal
-from typing import List, Dict, Tuple
+from typing import List, Dict
 from .check import check_name
 from .process import Process
 import itertools
@@ -13,7 +13,7 @@ class Architecture(_PHDLObj):
     def __init__(self):
         self.signals: List[Signal] = []
         self.processes: List[Process] = []
-        self.libraries: Dict[str, Tuple[str]] = {}
+        self.libraries: Dict[str, List[str]] = {}
         self.types: List[type] = []
         self.packages = set()
         pass
@@ -50,6 +50,19 @@ class Architecture(_PHDLObj):
         return ";\n\t".join([f'{signal.serialize_declaration()}' for signal in self.signals]) + ';' \
             if len(self.signals) > 0 \
             else ""
+
+    def add_element_libs_and_packs(self, elem):
+        for key in elem.requires.keys():
+            if key in self.libraries:
+                for key_new in elem.requires[key]:
+                    if key_new not in self.libraries[key]:
+                        self.libraries[key].add(key_new)
+
+            else:
+                self.libraries[key] = set([k for k in elem.requires[key]]) \
+                    if isinstance(elem.requires[key], (list, tuple)) else [elem.requires[key]]
+                if hasattr(elem, 'package'):
+                    self.packages.add(elem.package)
 
 
 def architecture(Target):
@@ -98,17 +111,10 @@ def get_architecture_types(target):
 
     for _type in target.types:
         if _type.requires is not None:
-            for key in _type.requires.keys():
-                if key in target.libraries:
-                    for key_new in _type.requires[key]:
-                        if key_new not in target.libraries[key]:
-                            target.libraries[key].add(key_new)
-
-                else:
-                    target.libraries[key] = set([k for k in _type.requires[key]]) \
-                        if isinstance(_type.requires[key], (list, tuple)) else [_type.requires[key]]
-                    if hasattr(_type, 'package'):
-                        target.packages.add(_type.package)
+            target.add_element_libs_and_packs(_type)
         else:
             custom_types.append(_type)
     target.typestrings = generate_typestrings(custom_types)
+
+
+

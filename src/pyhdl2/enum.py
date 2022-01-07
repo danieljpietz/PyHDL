@@ -2,15 +2,15 @@ from .type import _Type
 from .types import std_logic
 from .check import check_name
 
-def Enum(name, *args):
+def Enum(name, values):
 
     check_name(name)
-    for arg in args:
+    for arg in values:
         check_name(arg)
 
     class _Enum(_Type):
         type_name = name
-        elements = args
+        elements = values
         def __init__(self, val):
             self._value = val
             pass

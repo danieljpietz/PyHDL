@@ -60,6 +60,9 @@ class Conditional(_PHDLObj):
     def add_if(self, _if):
         self._if_strs.append(f"\n{_if.value()}")
 
+    def add_procedure_call(self, proc):
+        self._if_strs.append(f"\n{proc.value()}")
+
     def add_else(self, _else):
         self._elses.append(f"{_else.value()}")
 
@@ -105,6 +108,8 @@ class Else(Conditional):
 ifStack: List[Conditional] = []
 ifLast: Optional[Conditional] = None
 
+def _get_current_if():
+    return ifStack[-1]
 
 def IF(condition):
     return Conditional(_get_current_process().architecture, _get_current_process(), condition)

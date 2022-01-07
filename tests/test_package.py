@@ -11,7 +11,7 @@ def test_create_package():
 
     @package
     class MyPackage:
-        elements = {Array("MyArray", std_logic, (0, 3)), MyRecord}
+        elements = [Array("MyArray", std_logic, (0, 3)), MyRecord]
         pass
 
     @entity

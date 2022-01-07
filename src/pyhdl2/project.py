@@ -16,9 +16,10 @@ def preamble():
 
 def libraries(architecture):
     nl = '\n'
-    return f'{nl}'.join([f"library {key};\n"
+    return  f'{nl}'.join([f"library {key};\n"
                          f"{(f'{nl}'.join([f'use {key}.{package};' for package in architecture.libraries[key]]))}"
                          for key in architecture.libraries.keys()])
+
 
 
 def beautify(input: str):
