@@ -2,7 +2,7 @@ import pytest
 from pyhdl2 import *
 
 
-def test_generate_module(tmpdir):
+def test_generate_project(tmpdir):
     @entity
     class MyEntity(Entity):
         interfaces = (PortSignal("clk", std_logic, Direction.In),
@@ -23,5 +23,5 @@ def test_generate_module(tmpdir):
                     self.sig_vec[i].next = self.sig_vec[i - 1]
                 self.sig_vec[-1].next = MyEntity.input
 
-    file = tmpdir.join('output.vhd')
-    write_out(file.strpath, MyEntity, MyArchitecture)
+    #file = tmpdir.join('output.vhd')
+    #write_out(file.strpath, MyEntity, MyArchitecture)
