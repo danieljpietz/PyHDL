@@ -12,6 +12,7 @@ class _Type:
     type: type
     requires: Optional[Dict[str, Tuple[str]]] = None
     package: Optional[Any]
+    subtype: Optional[Tuple[Any]]
 
     def __str__(self):
         return self.type_name
@@ -96,6 +97,7 @@ def Array(_name: str, _base_type: typing.Type[Type], _bounds: Tuple[int, int],
         bounds = _bounds
         base = _base_type
         name = _name
+        subtype = (_base_type,)
         if generic_bounds:
             type_name = f"{_name} ({bounds[0]} {'down' if bounds[0] > bounds[1] else ''}to {bounds[1]})"
         else:
@@ -114,6 +116,7 @@ def Array(_name: str, _base_type: typing.Type[Type], _bounds: Tuple[int, int],
 
 
 def record(arg):
+    #TODO Subtypes for record
     return dataclass(new_type(arg), eq=False)
 
 

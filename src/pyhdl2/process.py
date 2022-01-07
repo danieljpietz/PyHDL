@@ -5,11 +5,14 @@ from .check import check_name
 
 
 class Process(_PHDLObj):
-    def __init__(self, sensitivity: Optional[Union[Tuple[Signal], Signal, None]] = None):
+    def __init__(self, sensitivity: Optional[Union[Tuple[Signal], Signal, None]] = None, label: Optional[str] = None):
         self.proc_str = None
         self.func: Callable[[_PHDLObj], None]
         self.sensitivity = sensitivity
-        self.name: str
+        if label is None:
+            self.name: str
+        else:
+            self.name = label
         self.proc_strs: List[str] = []
         self.proc_str: str
         self.if_statements: List[Process] = []
@@ -17,7 +20,8 @@ class Process(_PHDLObj):
 
     def __call__(self, func: Callable[[_PHDLObj], None]):
         self.func = func
-        self.name = self.func.__name__
+        if not hasattr(self, 'name'):
+            self.name = self.func.__name__
         check_name(self.name)
         return self
         pass
@@ -31,24 +35,11 @@ class Process(_PHDLObj):
         self.proc_str = ('\n'.join(self.proc_strs))
         self.architecture.processes.append(self)
 
-    def get_signals(self):
-        baseSignals = self.architecture.signals + list(self.architecture.entity.interfaces)
-        signalsOld = []
-        signalsNew = baseSignals
-        while len(signalsOld) != len(signalsNew):
-            signalsOld = signalsNew
-            signalsNew = []
-            for signal in signalsOld:
-                try:
-                    for sig in signal:
-                        signalsNew.append(sig)
-                except TypeError:
-                    signalsNew.append(signal)
-                    pass
-        return signalsNew
+    def sig_list(self):
+        return self.architecture.signals + list(self.architecture.entity.interfaces)
 
     def process_signals(self):
-        for signal in self.get_signals():
+        for signal in get_signals_from_list(self.sig_list()):
             if signal.next is not None:
                 if isinstance(signal, PortSignal) and signal.direction == Direction.In:
                     raise TypeError("Cannot make assignment to input signal")
@@ -60,7 +51,7 @@ class Process(_PHDLObj):
         self.if_statements.append(IF)
 
     def sanitize_signals(self):
-        for signal in self.get_signals():
+        for signal in get_signals_from_list(self.sig_list()):
             if signal.next is not None:
                 raise ValueError("No signals should have a next component outside of a process. "
                                  "You probably set it somewhere else in your architecture")
@@ -80,7 +71,7 @@ class Process(_PHDLObj):
         _ifs = '\n'.join([IF.value() for IF in self.if_statements])
 
         _ser = f"{self.name}: process {_sensitivity}\n" \
-               f"begin" \
+               f"begin\n" \
                f"{self.proc_str}\n" \
                f"{_ifs}" \
                f"end process;"
@@ -89,6 +80,24 @@ class Process(_PHDLObj):
 
 _currentProcess: Optional[Process]
 
+
+def get_signals_from_list(signals):
+    signalsOld = []
+    signalsNew = signals
+    while len(signalsOld) != len(signalsNew):
+        signalsOld = signalsNew
+        signalsNew = []
+        for signal in signalsOld:
+            try:
+                for sig in signal:
+                    signalsNew.append(sig)
+            except TypeError:
+                signalsNew.append(signal)
+    return signalsNew
+
+def get_signals_recursive():
+
+    pass
 
 def _set_current_process(proc: Optional[Process]):
     global _currentProcess
@@ -100,5 +109,5 @@ def _get_current_process():
     return _currentProcess
 
 
-def process(sig=None):
-    return Process(sig)
+def process(sig=None, label=None):
+    return Process(sig, label)

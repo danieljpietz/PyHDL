@@ -14,7 +14,6 @@ Const = Constant("MyConstant", MyRecord, MyRecord(std_logic('1'), std_logic('0')
 class MyPackage:
     elements = [Array("MyArray", std_logic, (0, 3)), MyRecord,
                 Const]
-    pass
 
 
 @module
@@ -25,6 +24,8 @@ class GettingStarted(Module):
 
     record_signal = Signal("record_signal", MyRecord, default=MyRecord(std_logic(1), std_logic(0)))
     sig1 = Signal("sig1", std_logic, default=std_logic(0))
+
+    my_other_const = Constant("my_other_const", std_logic, std_logic('1'))
 
     @process(clk)
     def my_process(self):

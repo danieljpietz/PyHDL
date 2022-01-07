@@ -3,9 +3,9 @@ from .entity import Entity
 from .signal import Signal, PortSignal
 from typing import List, Dict, Tuple
 from .check import check_name
-from .process import Process
+from .process import Process, get_signals_from_list
 import itertools
-from .type import generate_typestrings, isarray
+from .type import generate_typestrings
 
 
 class Architecture(_PHDLObj):
@@ -17,7 +17,6 @@ class Architecture(_PHDLObj):
         self.types: List[type] = []
         self.packages = set()
         pass
-
 
     def add_signal(self, sig):
         if isinstance(sig, PortSignal):
@@ -75,10 +74,7 @@ def _architecture(target):
     for sig in type(target).__dict__.values():
         if isinstance(sig, Signal):
             target_new_signals.append(sig)
-        elif isarray(sig):
-            if len(sig) > 1 and isinstance(sig[0], Signal):
-                for signal in sig:
-                    target_new_signals.append(signal)
+    # target_new_signals = get_signals_from_list(target_new_signals)
     for signal in target_new_signals:
         target.add_signal(signal)
 
@@ -93,12 +89,32 @@ def get_architecture_processes(_architecture):
             p.invoke()
 
 
-def get_architecture_types(target):
-    for signal in list(itertools.chain(*[target.signals, target.entity.interfaces])):
-        if signal.type not in target.types:
-            target.types.append(signal.type)
+def get_subtypes_from_list(types):
+    __types = []
+    for _type in types:
+        _types = get_subtypes_recursive(_type)
+        for _t in reversed(_types):
+            if _t not in __types:
+                __types.append(_t)
+    return __types
 
-    custom_types = set()
+
+def get_subtypes_recursive(_type):
+    subtypes = [_type]
+    try:
+        for sub in _type.subtype:
+            subtypes += get_subtypes_recursive(sub)
+    except AttributeError:
+        pass
+    finally:
+        return subtypes
+
+
+def get_architecture_types(target):
+    target.types = get_subtypes_from_list(
+        [signal.type for signal in list(itertools.chain(*[target.signals, target.entity.interfaces]))])
+
+    custom_types = []
 
     for _type in target.types:
         if _type.requires is not None:
@@ -114,5 +130,5 @@ def get_architecture_types(target):
                     if hasattr(_type, 'package'):
                         target.packages.add(_type.package)
         else:
-            custom_types.add(_type)
+            custom_types.append(_type)
     target.typestrings = generate_typestrings(custom_types)
