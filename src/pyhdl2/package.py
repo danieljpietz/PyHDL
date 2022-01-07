@@ -2,6 +2,7 @@ from .core import _PHDLObj
 from .type import generate_typestrings, _Type
 from .signal import Constant
 
+
 class Package(_PHDLObj):
     def __init__(self, cls):
         self.name = cls.__name__

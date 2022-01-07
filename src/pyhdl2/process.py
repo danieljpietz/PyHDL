@@ -56,6 +56,9 @@ class Process(_PHDLObj):
                 raise ValueError("No signals should have a next component outside of a process. "
                                  "You probably set it somewhere else in your architecture")
 
+    def get_signals(self):
+        return get_signals_from_list(self.sig_list())
+
     def process_signal(self, signal):
         if signal.next.type != signal.type:
             signal.next = signal.cast(signal.next)
@@ -95,9 +98,6 @@ def get_signals_from_list(signals):
                 signalsNew.append(signal)
     return signalsNew
 
-def get_signals_recursive():
-
-    pass
 
 def _set_current_process(proc: Optional[Process]):
     global _currentProcess

@@ -3,9 +3,9 @@ from .entity import Entity
 from .signal import Signal, PortSignal
 from typing import List, Dict, Tuple
 from .check import check_name
-from .process import Process, get_signals_from_list
+from .process import Process
 import itertools
-from .type import generate_typestrings
+from .type import generate_typestrings, get_subtypes_from_list
 
 
 class Architecture(_PHDLObj):
@@ -87,27 +87,6 @@ def get_architecture_processes(_architecture):
         if isinstance(p, Process):
             p.architecture = _architecture
             p.invoke()
-
-
-def get_subtypes_from_list(types):
-    __types = []
-    for _type in types:
-        _types = get_subtypes_recursive(_type)
-        for _t in reversed(_types):
-            if _t not in __types:
-                __types.append(_t)
-    return __types
-
-
-def get_subtypes_recursive(_type):
-    subtypes = [_type]
-    try:
-        for sub in _type.subtype:
-            subtypes += get_subtypes_recursive(sub)
-    except AttributeError:
-        pass
-    finally:
-        return subtypes
 
 
 def get_architecture_types(target):

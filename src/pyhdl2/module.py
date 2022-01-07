@@ -1,7 +1,7 @@
 from .architecture import architecture, Architecture
 from .entity import entity, Entity
 from .signal import PortSignal
-from typing import Tuple, List
+from typing import Tuple
 
 
 class Module(Architecture):

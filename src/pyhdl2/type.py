@@ -116,8 +116,9 @@ def Array(_name: str, _base_type: typing.Type[Type], _bounds: Tuple[int, int],
 
 
 def record(arg):
-    #TODO Subtypes for record
-    return dataclass(new_type(arg), eq=False)
+    rec = dataclass(new_type(arg), eq=False)
+    rec.subtype = get_subtypes_from_list(rec.__annotations__.values())
+    return rec
 
 
 class Record(_Type):
@@ -156,3 +157,24 @@ def generate_typestrings(types):
 
 def generate_typestring(custom_type: Any):
     return custom_type.typestring(custom_type)
+
+
+def get_subtypes_from_list(types):
+    __types = []
+    for _type in types:
+        _types = get_subtypes_recursive(_type)
+        for _t in reversed(_types):
+            if _t not in __types:
+                __types.append(_t)
+    return __types
+
+
+def get_subtypes_recursive(_type):
+    subtypes = [_type]
+    try:
+        for sub in _type.subtype:
+            subtypes += get_subtypes_recursive(sub)
+    except AttributeError:
+        pass
+    finally:
+        return subtypes

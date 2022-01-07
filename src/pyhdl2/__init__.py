@@ -9,3 +9,4 @@ from .project import Project, write_out
 from .subprogram import Procedure, procedure
 from .package import package
 from .module import Module, module
+from .concurrent import Concurrent, concurrent

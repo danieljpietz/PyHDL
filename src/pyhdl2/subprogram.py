@@ -1,31 +1,9 @@
-from .core import _PHDLObj
 from .signal import PortSignal
 from .architecture import Architecture, _architecture, get_architecture_processes, get_architecture_types
 from .check import check_name
 from .process import Process
-from abc import abstractmethod
-from typing import Callable, List, Any, Tuple
 from .entity import Entity
-
-
-class Function(_PHDLObj):
-    """
-    def __init__(self, func):
-        argspec = signature(func)
-        self.args = []
-        for arg in argspec.parameters.values():
-            self.args.append(Signal(arg.name, arg.annotation))
-        self.func = func
-        self.args = tuple(self.args)
-        x = self.func(*self.args)
-        pass
-        """
-
-    def __call__(self, *args, **kwargs):
-        pass
-
-    def value(self):
-        pass
+from typing import Tuple
 
 
 class _Procedure(Process):
