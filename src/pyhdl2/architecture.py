@@ -9,13 +9,15 @@ from .type import generate_typestrings, isarray
 
 
 class Architecture(_PHDLObj):
-    entity: Entity
-    signals: List[Signal] = []
-    processes: List[Process] = []
-    libraries: Dict[str, Tuple[str]] = {}
-    types: List[type] = []
-    typestrings: str
-    name: str
+
+    def __init__(self):
+        self.signals: List[Signal] = []
+        self.processes: List[Process] = []
+        self.libraries: Dict[str, Tuple[str]] = {}
+        self.types: List[type] = []
+        self.packages = set()
+        pass
+
 
     def add_signal(self, sig):
         if isinstance(sig, PortSignal):
@@ -45,14 +47,13 @@ class Architecture(_PHDLObj):
                f"end architecture rtl;"
 
     def signals_string(self):
-        return ";\n\t".join([f'signal {signal.serialize_declaration()}' for signal in self.signals]) + ';' \
+        return ";\n\t".join([f'{signal.serialize_declaration()}' for signal in self.signals]) + ';' \
             if len(self.signals) > 0 \
             else ""
 
 
 def architecture(Target):
     target = Target()
-    target.processes = []
     if not issubclass(Target, Architecture):
         raise TypeError(f"Architecture {Target} must inherit Architecture")
     if not isinstance(Target.entity, Entity):
@@ -106,9 +107,12 @@ def get_architecture_types(target):
                     for key_new in _type.requires[key]:
                         if key_new not in target.libraries[key]:
                             target.libraries[key].add(key_new)
+
                 else:
                     target.libraries[key] = set([k for k in _type.requires[key]]) \
                         if isinstance(_type.requires[key], (list, tuple)) else [_type.requires[key]]
+                    if hasattr(_type, 'package'):
+                        target.packages.add(_type.package)
         else:
             custom_types.add(_type)
     target.typestrings = generate_typestrings(custom_types)

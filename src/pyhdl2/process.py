@@ -1,12 +1,12 @@
 from .core import _PHDLObj
 from typing import Optional, Tuple, List, Callable, Union, Any
-from .type import isarray, isrecord
-from .signal import Signal, PortSignal, Direction
+from .signal import Signal, PortSignal, Direction, Constant
 from .check import check_name
 
 
 class Process(_PHDLObj):
     def __init__(self, sensitivity: Optional[Union[Tuple[Signal], Signal, None]] = None):
+        self.proc_str = None
         self.func: Callable[[_PHDLObj], None]
         self.sensitivity = sensitivity
         self.name: str
@@ -22,51 +22,45 @@ class Process(_PHDLObj):
         return self
         pass
 
-    def get_signals(self):
-        return self.architecture.signals + list(self.architecture.entity.interfaces)
-
     def invoke(self):
         _set_current_process(self)
         self.sanitize_signals()
         self.func(self.architecture)
         _set_current_process(None)
-
         self.process_signals()
-
         self.proc_str = ('\n'.join(self.proc_strs))
         self.architecture.processes.append(self)
 
+    def get_signals(self):
+        baseSignals = self.architecture.signals + list(self.architecture.entity.interfaces)
+        signalsOld = []
+        signalsNew = baseSignals
+        while len(signalsOld) != len(signalsNew):
+            signalsOld = signalsNew
+            signalsNew = []
+            for signal in signalsOld:
+                try:
+                    for sig in signal:
+                        signalsNew.append(sig)
+                except TypeError:
+                    signalsNew.append(signal)
+                    pass
+        return signalsNew
+
     def process_signals(self):
         for signal in self.get_signals():
-            if isarray(signal.type):
-                for sig in signal:
-                    if sig.next is not None:
-                        if isinstance(signal, PortSignal) and signal.direction == Direction.In:
-                            raise TypeError("Cannot make assignment to input signal")
-                        self.process_signal(sig)
-            elif isrecord(signal.type):
-                for key in signal.type.__annotations__:
-                    sig = signal.__dict__[key]
-                    if sig.next is not None:
-                        if isinstance(signal, PortSignal) and signal.direction == Direction.In:
-                            raise TypeError("Cannot make assignment to input signal")
-                        self.process_signal(sig)
-            else:
-                if signal.next is not None:
-                    if isinstance(signal, PortSignal) and signal.direction == Direction.In:
-                        raise TypeError("Cannot make assignment to input signal")
-                    self.process_signal(signal)
+            if signal.next is not None:
+                if isinstance(signal, PortSignal) and signal.direction == Direction.In:
+                    raise TypeError("Cannot make assignment to input signal")
+                elif isinstance(signal, Constant):
+                    raise TypeError("Cannot make assignment to constant")
+                self.process_signal(signal)
 
     def add_if(self, IF):
         self.if_statements.append(IF)
 
     def sanitize_signals(self):
         for signal in self.get_signals():
-            if isarray(signal.type):
-                for sig in signal:
-                    if sig.next is not None:
-                        raise ValueError("No signals should have a next component outside of a process. "
-                                         "You probably set it somewhere else in your architecture")
             if signal.next is not None:
                 raise ValueError("No signals should have a next component outside of a process. "
                                  "You probably set it somewhere else in your architecture")
@@ -86,7 +80,7 @@ class Process(_PHDLObj):
         _ifs = '\n'.join([IF.value() for IF in self.if_statements])
 
         _ser = f"{self.name}: process {_sensitivity}\n" \
-               f"begin \n" \
+               f"begin" \
                f"{self.proc_str}\n" \
                f"{_ifs}" \
                f"end process;"

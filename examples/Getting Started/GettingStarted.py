@@ -1,29 +1,37 @@
 from pyhdl2 import *
 
-@entity
-class ExampleEntity(Entity):
-    interfaces = (PortSignal('clk', std_logic, Direction.In),
-                  PortSignal('output', std_logic, Direction.Out))
+
+@record
+class MyRecord(Record):
+    v: std_logic
+    rst: std_logic
 
 
-@architecture
-class ExampleArchitecture(Architecture):
-    entity = ExampleEntity
+Const = Constant("MyConstant", MyRecord, MyRecord(std_logic('1'), std_logic('0')))
 
-    @record
-    class MyRecord(Record):
-        v: std_logic
-        rst: std_logic
+
+@package
+class MyPackage:
+    elements = [Array("MyArray", std_logic, (0, 3)), MyRecord,
+                Const]
+    pass
+
+
+@module
+class GettingStarted(Module):
+
+    clk = PortSignal('clk', std_logic, Direction.In)
+    output = PortSignal('output', std_logic, Direction.Out)
 
     record_signal = Signal("record_signal", MyRecord, default=MyRecord(std_logic(1), std_logic(0)))
     sig1 = Signal("sig1", std_logic, default=std_logic(0))
 
-    @process(entity.clk)
+    @process(clk)
     def my_process(self):
-        @IF(self.entity.clk == std_logic('1'))
+        @IF(self.clk == std_logic('1'))
         def my_if():
             self.entity.output.next = self.sig1
-            self.sig1.next = self.sig1.neg()
+            self.sig1.next = Const
 
 
-write_out(ExampleEntity, ExampleArchitecture, "getting_started.vhd")
+write_out("getting_started.vhd", GettingStarted)

@@ -5,10 +5,10 @@ from pyhdl2 import *
 def test_create_signal():
     my_sig = Signal("my_sig", std_logic)
     assert my_sig.value() == "my_sig"
-    assert my_sig.serialize_declaration() == "my_sig : std_logic"
+    assert my_sig.serialize_declaration() == "signal my_sig : std_logic"
 
     my_sig2 = Signal("my_sig2", std_logic, std_logic('1'))
-    assert my_sig2.serialize_declaration() == "my_sig2 : std_logic := \'1\'"
+    assert my_sig2.serialize_declaration() == "signal my_sig2 : std_logic := \'1\'"
 
 
 def test_signal_reserved_name():
@@ -71,3 +71,25 @@ def test_signal_arithmetic_op_check():
 
     with pytest.raises(TypeError):
         sig1 + sig2
+
+
+def test_create_constant():
+    sig1 = Constant("sig1", std_logic, std_logic(1))
+
+
+def test_prevent_constant_change():
+
+    with pytest.raises(TypeError):
+        @entity
+        class MyEnt(Entity):
+            interfaces = ()
+
+        @architecture
+        class MyArchitecture(Architecture):
+            entity = MyEnt
+            sig1 = Constant("sig1", std_logic, std_logic(1))
+
+            @process()
+            def my_proc(self):
+                self.sig1.next = std_logic(0)
+

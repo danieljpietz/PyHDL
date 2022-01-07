@@ -14,6 +14,18 @@ def test_create_package():
         elements = {Array("MyArray", std_logic, (0, 3)), MyRecord}
         pass
 
+    @entity
+    class Ent(Entity):
+        interfaces = (PortSignal("input", MyRecord, Direction.In),)
+
+    @architecture
+    class Arch(Architecture):
+        entity = Ent
+
     print()
     print(MyPackage.value())
+
+    x = Project(Ent, Arch)
+    print(x)
+
     pass

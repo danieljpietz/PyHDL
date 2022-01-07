@@ -1,4 +1,3 @@
-"use strict";
 let isTesting = false;
 const ILEscape = "@@";
 const ILCommentPrefix = ILEscape + "comments";
@@ -8,7 +7,7 @@ const ILSingleQuote = "⦼";
 const ILBackslash = "⨸";
 const ILSemicolon = "⨴";
 var FormatMode;
-(function (FormatMode) {
+(function(FormatMode) {
     FormatMode[FormatMode["Default"] = 0] = "Default";
     FormatMode[FormatMode["EndsWithSemicolon"] = 1] = "EndsWithSemicolon";
     FormatMode[FormatMode["CaseWhen"] = 2] = "CaseWhen";
@@ -31,11 +30,9 @@ class NewLineSettings {
         let str = addNewLine.toLowerCase();
         if (str == "none") {
             return;
-        }
-        else if (!str.startsWith("no")) {
+        } else if (!str.startsWith("no")) {
             this.newLineAfterPush(keyword);
-        }
-        else {
+        } else {
             this.noNewLineAfterPush(keyword);
         }
     }
@@ -49,31 +46,30 @@ function ConstructNewLineSettings(dict) {
     return settings;
 }
 
-String.prototype.regexCount = function (pattern) {
+String.prototype.regexCount = function(pattern) {
     if (pattern.flags.indexOf("g") < 0) {
         pattern = new RegExp(pattern.source, pattern.flags + "g");
     }
     return (this.match(pattern) || []).length;
 };
-String.prototype.count = function (text) {
+String.prototype.count = function(text) {
     return this.split(text).length - 1;
 };
-String.prototype.regexStartsWith = function (pattern) {
+String.prototype.regexStartsWith = function(pattern) {
     var searchResult = this.search(pattern);
     return searchResult == 0;
 };
-String.prototype.regexIndexOf = function (pattern, startIndex) {
+String.prototype.regexIndexOf = function(pattern, startIndex) {
     startIndex = startIndex || 0;
     var searchResult = this.substr(startIndex).search(pattern);
     return (-1 === searchResult) ? -1 : searchResult + startIndex;
 };
-String.prototype.regexLastIndexOf = function (pattern, startIndex) {
+String.prototype.regexLastIndexOf = function(pattern, startIndex) {
     pattern = (pattern.global) ? pattern :
         new RegExp(pattern.source, 'g' + (pattern.ignoreCase ? 'i' : '') + (pattern.multiline ? 'm' : ''));
-    if (typeof (startIndex) === 'undefined') {
+    if (typeof(startIndex) === 'undefined') {
         startIndex = this.length;
-    }
-    else if (startIndex < 0) {
+    } else if (startIndex < 0) {
         startIndex = 0;
     }
     const stringToWorkWith = this.substring(0, startIndex + 1);
@@ -86,18 +82,19 @@ String.prototype.regexLastIndexOf = function (pattern, startIndex) {
     }
     return lastIndexOf;
 };
-String.prototype.reverse = function () {
+String.prototype.reverse = function() {
     return this.split('').reverse().join('');
 };
-String.prototype.convertToRegexBlockWords = function () {
+String.prototype.convertToRegexBlockWords = function() {
     let result = new RegExp("(" + this + ")([^\\w]|$)");
     return result;
 };
-Array.prototype.convertToRegexBlockWords = function () {
+Array.prototype.convertToRegexBlockWords = function() {
     let wordsStr = this.join("|");
     let result = new RegExp("(" + wordsStr + ")([^\\w]|$)");
     return result;
 };
+
 function EscapeComments(arr) {
     var comments = [];
     var count = 0;
@@ -132,16 +129,14 @@ function EscapeComments(arr) {
                         if (commentStartIndex + 2 == line.length) {
                             hasComment = false;
                         }
-                    }
-                    else {
+                    } else {
                         isInComment = true;
                         comments.push(line.substr(commentStartIndex));
                         arr[i] = line.substr(0, commentStartIndex) + ILCommentPrefix + count;
                         count++;
                         hasComment = false;
                     }
-                }
-                else {
+                } else {
                     hasComment = false;
                 }
                 continue;
@@ -150,8 +145,7 @@ function EscapeComments(arr) {
                 var lastCommentEndIndex = line.regexLastIndexOf(commentRegex, line.length);
                 if (commentStartIndex == 0) {
                     var commentEndIndex = line.indexOf("*/", lastCommentEndIndex);
-                }
-                else {
+                } else {
                     var commentEndIndex = line.indexOf("*/", commentStartIndex);
                 }
                 if (commentEndIndex >= 0) {
@@ -160,8 +154,7 @@ function EscapeComments(arr) {
                     arr[i] = ILCommentPrefix + count + line.substr(commentEndIndex + 2);
                     count++;
                     hasComment = true;
-                }
-                else {
+                } else {
                     comments.push(line);
                     arr[i] = ILCommentPrefix + count;
                     count++;
@@ -172,27 +165,32 @@ function EscapeComments(arr) {
     }
     return comments;
 }
+
 function ToLowerCases(arr) {
     for (var i = 0; i < arr.length; i++) {
         arr[i] = arr[i].toLowerCase();
     }
 }
+
 function ToUpperCases(arr) {
     for (var i = 0; i < arr.length; i++) {
         arr[i] = arr[i].toUpperCase();
     }
 }
+
 function ToCamelCases(arr) {
     for (var i = 0; i < arr.length; i++) {
         arr[i] = arr[i].charAt(0) + arr[i].slice(1).toLowerCase();
     }
 }
+
 function ReplaceKeyWords(text, keywords) {
     for (var k = 0; k < keywords.length; k++) {
         text = text.replace(new RegExp("([^a-zA-Z0-9_@]|^)" + keywords[k] + "([^a-zA-Z0-9_]|$)", 'gi'), "$1" + keywords[k] + "$2");
     }
     return text;
 }
+
 function SetKeywordCase(input, keywordcase, keywords) {
     let inputcase = keywordcase.toLowerCase();
     switch (inputcase) {
@@ -208,6 +206,7 @@ function SetKeywordCase(input, keywordcase, keywords) {
     input = ReplaceKeyWords(input, keywords);
     return input;
 }
+
 function SetNewLinesAfterSymbols(text, newLineSettings) {
     if (newLineSettings == null) {
         return text;
@@ -219,8 +218,7 @@ function SetNewLinesAfterSymbols(text, newLineSettings) {
             let regex = null;
             if (upper.regexStartsWith(/\w/)) {
                 regex = new RegExp("\\b" + rexString, "g");
-            }
-            else {
+            } else {
                 regex = new RegExp(rexString, "g");
             }
             text = text.replace(regex, '$1\r\n$2');
@@ -236,8 +234,7 @@ function SetNewLinesAfterSymbols(text, newLineSettings) {
             if (symbol.regexStartsWith(/\w/)) {
                 regex = new RegExp("\\b" + rexString, "g");
                 text = text.replace(regex, '$1 $2');
-            }
-            else {
+            } else {
                 regex = new RegExp(rexString, "g");
             }
             text = text.replace(regex, '$1 $2');
@@ -273,6 +270,7 @@ class BeautifierSettings {
 
 let KeyWords = ["ABS", "ACCESS", "AFTER", "ALIAS", "ALL", "AND", "ARCHITECTURE", "ARRAY", "ASSERT", "ATTRIBUTE", "BEGIN", "BLOCK", "BODY", "BUFFER", "BUS", "CASE", "COMPONENT", "CONFIGURATION", "CONSTANT", "CONTEXT", "COVER", "DISCONNECT", "DOWNTO", "DEFAULT", "ELSE", "ELSIF", "END", "ENTITY", "EXIT", "FAIRNESS", "FILE", "FOR", "FORCE", "FUNCTION", "GENERATE", "GENERIC", "GROUP", "GUARDED", "IF", "IMPURE", "IN", "INERTIAL", "INOUT", "IS", "LABEL", "LIBRARY", "LINKAGE", "LITERAL", "LOOP", "MAP", "MOD", "NAND", "NEW", "NEXT", "NOR", "NOT", "NULL", "OF", "ON", "OPEN", "OR", "OTHERS", "OUT", "PACKAGE", "PORT", "POSTPONED", "PROCEDURE", "PROCESS", "PROPERTY", "PROTECTED", "PURE", "RANGE", "RECORD", "REGISTER", "REJECT", "RELEASE", "REM", "REPORT", "RESTRICT", "RESTRICT_GUARANTEE", "RETURN", "ROL", "ROR", "SELECT", "SEQUENCE", "SEVERITY", "SHARED", "SIGNAL", "SLA", "SLL", "SRA", "SRL", "STRONG", "SUBTYPE", "THEN", "TO", "TRANSPORT", "TYPE", "UNAFFECTED", "UNITS", "UNTIL", "USE", "VARIABLE", "VMODE", "VPROP", "VUNIT", "WAIT", "WHEN", "WHILE", "WITH", "XNOR", "XOR"];
 let TypeNames = ["BOOLEAN", "BIT", "CHARACTER", "INTEGER", "TIME", "NATURAL", "POSITIVE", "STD_LOGIC", "STD_LOGIC_VECTOR", "STD_ULOGIC", "STD_ULOGIC_VECTOR", "STRING"];
+
 function beautify(input, settings) {
     input = input.replace(/\r\n/g, "\n");
     input = input.replace(/\n/g, "\r\n");
@@ -360,12 +358,14 @@ function replaceEscapedWords(input, arr, prefix) {
     }
     return input;
 }
+
 function replaceEscapedComments(input, arr, prefix) {
     for (var i = 0; i < arr.length; i++) {
         input = input.replace(prefix + i, arr[i]);
     }
     return input;
 }
+
 function RemoveLeadingWhitespaces(arr) {
     for (var i = 0; i < arr.length; i++) {
         arr[i] = arr[i].replace(/^\s+/, "");
@@ -420,12 +420,10 @@ function FormattedLineToString(arr, indentation) {
         if (i instanceof FormattedLine) {
             if (i.Line.length > 0) {
                 result.push((Array(i.Indent + 1).join(indentation)) + i.Line);
-            }
-            else {
+            } else {
                 result.push("");
             }
-        }
-        else {
+        } else {
             result = result.concat(FormattedLineToString(i, indentation));
         }
     });
@@ -440,13 +438,14 @@ function GetCloseparentheseEndIndex(block) {
         let input = block.lines[block.cursor];
         openParentheseCount += input.count("(");
         closeParentheseCount += input.count(")");
-        if (openParentheseCount > 0
-            && openParentheseCount <= closeParentheseCount) {
+        if (openParentheseCount > 0 &&
+            openParentheseCount <= closeParentheseCount) {
             return;
         }
     }
     block.cursor = startIndex;
 }
+
 function beautifyPortGenericBlock(block, result, settings, indent, mode) {
     let startIndex = block.cursor;
     let firstLine = block.lines[startIndex];
@@ -469,8 +468,7 @@ function beautifyPortGenericBlock(block, result, settings, indent, mode) {
         if (newInputs.length == 2) {
             bodyBlock.splitLine(startIndex, newInputs[0], newInputs[1]);
         }
-    }
-    else if (endIndex > startIndex + 1 && secondLineHasParenthese) {
+    } else if (endIndex > startIndex + 1 && secondLineHasParenthese) {
         block.lines[startIndex + 1] = block.lines[startIndex + 1].replace(/\(([\w\(\) ]+)/, '(\r\n$1');
         let newInputs = block.lines[startIndex + 1].split("\r\n");
         if (newInputs.length == 2) {
@@ -495,9 +493,9 @@ function beautifyPortGenericBlock(block, result, settings, indent, mode) {
     }
     var alignSettings = settings.SignAlignSettings;
     if (alignSettings != null) {
-        if (alignSettings.isRegional && !alignSettings.isAll
-            && alignSettings.keyWords != null
-            && alignSettings.keyWords.indexOf(mode) >= 0) {
+        if (alignSettings.isRegional && !alignSettings.isAll &&
+            alignSettings.keyWords != null &&
+            alignSettings.keyWords.indexOf(mode) >= 0) {
             AlignSigns(result, bodyBlock.start + 1, bodyBlock.end, alignSettings.mode, alignSettings.alignComments);
         }
     }
@@ -525,6 +523,7 @@ function indexOfGroup(regex, input, group) {
     }
     return index;
 }
+
 function AlignSign_(result, startIndex, endIndex, symbol, mode) {
     let maxSymbolIndex = -1;
     let symbolIndices = {};
@@ -545,8 +544,7 @@ function AlignSign_(result, startIndex, endIndex, symbol, mode) {
         let regex;
         if (symbol == "direction") {
             regex = new RegExp("(:\\s*)(IN|OUT|INOUT|BUFFER)(\\s+)(\\w)");
-        }
-        else {
+        } else {
             regex = new RegExp("([\\s\\w\\\\]|^)" + symbol + "([\\s\\w\\\\]|$)");
         }
         if (line.regexCount(regex) > 1) {
@@ -555,18 +553,16 @@ function AlignSign_(result, startIndex, endIndex, symbol, mode) {
         let colonIndex;
         if (symbol == "direction") {
             colonIndex = indexOfGroup(regex, line, 4);
-        }
-        else {
+        } else {
             colonIndex = line.regexIndexOf(regex);
         }
         if (colonIndex > 0) {
             maxSymbolIndex = Math.max(maxSymbolIndex, colonIndex);
             symbolIndices[i] = colonIndex;
-        }
-        else if ((mode != "local" && !line.startsWith(ILCommentPrefix) && line.length != 0)
-            || (mode == "local")) {
+        } else if ((mode != "local" && !line.startsWith(ILCommentPrefix) && line.length != 0) ||
+            (mode == "local")) {
             if (startLine < i - 1) // if cannot find the symbol, a block of symbols ends
-             {
+            {
                 AlignSign(result, startLine, i - 1, symbol, maxSymbolIndex, symbolIndices);
             }
             maxSymbolIndex = -1;
@@ -575,10 +571,11 @@ function AlignSign_(result, startIndex, endIndex, symbol, mode) {
         }
     }
     if (startLine < endIndex) // if cannot find the symbol, a block of symbols ends
-     {
+    {
         AlignSign(result, startLine, endIndex, symbol, maxSymbolIndex, symbolIndices);
     }
 }
+
 function AlignSign(result, startIndex, endIndex, symbol, maxSymbolIndex = -1, symbolIndices = {}) {
     if (maxSymbolIndex < 0) {
         return;
@@ -589,9 +586,9 @@ function AlignSign(result, startIndex, endIndex, symbol, maxSymbolIndex = -1, sy
             continue;
         }
         let line = result[lineIndex].Line;
-        result[lineIndex].Line = line.substring(0, symbolIndex)
-            + (Array(maxSymbolIndex - symbolIndex + 1).join(" "))
-            + line.substring(symbolIndex);
+        result[lineIndex].Line = line.substring(0, symbolIndex) +
+            (Array(maxSymbolIndex - symbolIndex + 1).join(" ")) +
+            line.substring(symbolIndex);
     }
 }
 
@@ -631,6 +628,7 @@ function getSemicolonBlockEndIndex(block, settings) {
     }
     block.cursor = endIndex;
 }
+
 function beautifyComponentBlock(block, result, settings, indent) {
     let startIndex = block.cursor;
     for (; block.cursor <= block.end; block.cursor++) {
@@ -695,6 +693,7 @@ function alignSignalAssignmentBlock(settings, inputs, startIndex, endIndex, resu
         }
     }
 }
+
 function beautify3(block, result, settings, indent) {
     let regexOneLineBlockKeyWords = new RegExp(/(PROCEDURE)[^\w](?!.+[^\w]IS([^\w]|$))/); //match PROCEDURE..; but not PROCEDURE .. IS;
     let regexFunctionMultiLineBlockKeyWords = new RegExp(/(FUNCTION|IMPURE FUNCTION)[^\w](?=.+[^\w]IS([^\w]|$))/); //match FUNCTION .. IS; but not FUNCTION
@@ -835,52 +834,48 @@ function beautify3(block, result, settings, indent) {
             }
             continue;
         }
-        if (input.regexStartsWith(/FUNCTION[^\w]/)
-            && input.regexIndexOf(/[^\w]RETURN[^\w]/) < 0) {
+        if (input.regexStartsWith(/FUNCTION[^\w]/) &&
+            input.regexIndexOf(/[^\w]RETURN[^\w]/) < 0) {
             beautifyPortGenericBlock(block, result, settings, indent, "FUNCTION");
             if (!block.lines[block.cursor].regexStartsWith(regexBlockEndsKeyWords)) {
                 block.cursor++;
                 beautify3(block, result, settings, indent + 1);
-            }
-            else {
+            } else {
                 result[block.cursor].Indent++;
             }
             continue;
         }
-        if (input.regexStartsWith(/IMPURE FUNCTION[^\w]/)
-            && input.regexIndexOf(/[^\w]RETURN[^\w]/) < 0) {
+        if (input.regexStartsWith(/IMPURE FUNCTION[^\w]/) &&
+            input.regexIndexOf(/[^\w]RETURN[^\w]/) < 0) {
             beautifyPortGenericBlock(block, result, settings, indent, "IMPURE FUNCTION");
             if (!block.lines[block.cursor].regexStartsWith(regexBlockEndsKeyWords)) {
                 if (block.lines[block.cursor].regexStartsWith(regexBlockIndentedEndsKeyWords)) {
                     result[block.cursor].Indent++;
-                }
-                else {
+                } else {
                     block.cursor++;
                     beautify3(block, result, settings, indent + 1);
                 }
-            }
-            else {
+            } else {
                 result[block.cursor].Indent++;
             }
             continue;
         }
         result.push(new FormattedLine(input, indent));
-        if (indent > 0
-            && (input.regexStartsWith(regexBlockMidKeyWords)
-                || (Mode != FormatMode.EndsWithSemicolon && input.regexStartsWith(regexMidKeyElse))
-                || (Mode == FormatMode.CaseWhen && input.regexStartsWith(regexMidKeyWhen)))) {
+        if (indent > 0 &&
+            (input.regexStartsWith(regexBlockMidKeyWords) ||
+                (Mode != FormatMode.EndsWithSemicolon && input.regexStartsWith(regexMidKeyElse)) ||
+                (Mode == FormatMode.CaseWhen && input.regexStartsWith(regexMidKeyWhen)))) {
             result[block.cursor].Indent--;
-        }
-        else if (indent > 0
-            && (input.regexStartsWith(regexBlockEndsKeyWords))) {
+        } else if (indent > 0 &&
+            (input.regexStartsWith(regexBlockEndsKeyWords))) {
             result[block.cursor].Indent--;
             return;
         }
         if (input.regexStartsWith(regexOneLineBlockKeyWords)) {
             continue;
         }
-        if (input.regexStartsWith(regexFunctionMultiLineBlockKeyWords)
-            || input.regexStartsWith(regexBlockStartsKeywords)) {
+        if (input.regexStartsWith(regexFunctionMultiLineBlockKeyWords) ||
+            input.regexStartsWith(regexBlockStartsKeywords)) {
             block.cursor++;
             beautify3(block, result, settings, indent + 1);
         }
@@ -895,6 +890,7 @@ function ReserveSemicolonInKeywords(arr) {
         }
     }
 }
+
 function ApplyNoNewLineAfter(arr, noNewLineAfter) {
     if (noNewLineAfter == null) {
         return;
@@ -927,8 +923,7 @@ function RemoveAsserts(arr) {
             if (inAssert) {
                 need_semi = true;
             }
-        }
-        else {
+        } else {
             need_semi = false;
         }
     }
@@ -949,6 +944,7 @@ function escapeText(arr, regex, escapedChar) {
     }
     return quotes;
 }
+
 function RemoveExtraNewLines(input) {
     input = input.replace(/(?:\r\n|\r|\n)/g, '\r\n');
     input = input.replace(/ \r\n/g, '\r\n');
@@ -998,13 +994,12 @@ function alignAllSigns(alignAll) {
         getHTMLInputElement("sign_align_procedure").checked = false;
         getHTMLInputElement("sign_align_function").checked = false;
         getHTMLInputElement("sign_align_mode_div").disabled = false;
-    }
-    else {
+    } else {
         getHTMLInputElement("sign_align_all").checked = false;
     }
     let isDisabled = !alignAll;
     changeStateOfElements(["sign_align_mode"], isDisabled);
-    
+
 }
 //# sourceMappingURL=main.js.map
 
@@ -1013,6 +1008,7 @@ function alignAllSigns(alignAll) {
 function counterDecode(inputId, outputId) {
 
 }
+
 function descriptiveCounter(input) {
     input = input.replace(/\\t/g, "	");
     input = input.replace(/\\r/g, "\r");
@@ -1024,8 +1020,7 @@ function descriptiveCounter(input) {
         var char = input.substr(i, 1);
         if (char == input.substr(i + 1, 1)) {
             repeatedCharCount++;
-        }
-        else {
+        } else {
             switch (char) {
                 case " ":
                     char = "blankspace";
@@ -1073,269 +1068,269 @@ function getCountText(count, char) {
 //# sourceMappingURL=descriptiveCounter.js.map
 
 const localStorageSettingKey = "settings";
-        const localStorageNoFormatKey = "noFormat";
+const localStorageNoFormatKey = "noFormat";
 
-        function showHideSettings() {
-            var settingsDiv = document.getElementById("settings_div");
-            var control = document.getElementById("settings_control");
-            if (settingsDiv.className.indexOf("hide") >= 0) {
-                settingsDiv.className = settingsDiv.className.replace(/\s*hide/, "");
-                control.innerHTML = "Show Less ▲";
-            }
-            else {
-                settingsDiv.className += "hide";
-                control.innerHTML = "Show More Settings ▼";
-            }
+function showHideSettings() {
+    var settingsDiv = document.getElementById("settings_div");
+    var control = document.getElementById("settings_control");
+    if (settingsDiv.className.indexOf("hide") >= 0) {
+        settingsDiv.className = settingsDiv.className.replace(/\s*hide/, "");
+        control.innerHTML = "Show Less ▲";
+    } else {
+        settingsDiv.className += "hide";
+        control.innerHTML = "Show More Settings ▼";
+    }
+}
+
+function onLoad() {
+    let global_endOfLine = navigator.platform === 'Win32' ? '\\r\\n' : '\\n';
+    document.getElementById("cust_eol").value = global_endOfLine;
+    var setting = loadSetting();
+    if (setting == null) {
+        return;
+    }
+
+    var beautifierSettings = setting.setting;
+    document.getElementById("remove_comments").checked = beautifierSettings.RemoveComments;
+    document.getElementById("remove_lines").checked = setting.removeLines;
+    document.getElementById("remove_report").checked = beautifierSettings.RemoveAsserts;
+    document.getElementById("check_alias").checked = beautifierSettings.CheckAlias;
+    var alignSettings = beautifierSettings.SignAlignSettings;
+    if (alignSettings != null) {
+        var signAlignKeywords = alignSettings.keyWords;
+        if (signAlignKeywords != null && signAlignKeywords.length > 0) {
+            document.getElementById("sign_align_port").checked = signAlignKeywords.indexOf("PORT") >= 0;
+            document.getElementById("sign_align_function").checked = signAlignKeywords.indexOf("FUNCTION") >= 0;
+            document.getElementById("sign_align_procedure").checked = signAlignKeywords.indexOf("PROCEDURE") >= 0;
+            document.getElementById("sign_align_generic").checked = signAlignKeywords.indexOf("GENERIC") >= 0;
         }
+        document.getElementById("sign_align_all").checked = alignSettings.isAll;
+        document.getElementById("sign_align_mode_div").elements.namedItem("sign_align_modecase").value = alignSettings.mode;
+        document.getElementById("align_comments").checked = alignSettings.alignComments;
+    }
+    var newLineSettings = beautifierSettings.NewLineSettings;
+    var newLineAfter = newLineSettings.newLineAfter;
+    var noNewLineAfter = newLineSettings.noNewLineAfter;
+    document.getElementById("new_line_after_port").elements.namedItem("new_line_after_portcase").value = decodeNewLineSetting(newLineAfter, noNewLineAfter, "port");
+    document.getElementById("new_line_after_then").elements.namedItem("new_line_after_thencase").value = decodeNewLineSetting(newLineAfter, noNewLineAfter, "then");
+    document.getElementById("new_line_after_semicolon").elements.namedItem("new_line_after_semicoloncase").value = decodeNewLineSetting(newLineAfter, noNewLineAfter, ";");
+    document.getElementById("new_line_after_else").elements.namedItem("new_line_after_elsecase").value = decodeNewLineSetting(newLineAfter, noNewLineAfter, "else");
+    document.getElementById("new_line_after_generic").elements.namedItem("new_line_after_genericcase").value = decodeNewLineSetting(newLineAfter, noNewLineAfter, "generic");
+    document.getElementById("compress").checked = setting.compress;
+    var indentation = beautifierSettings.Indentation;
+    document.getElementById("use_space").checked = indentation != "\t";
+    document.getElementById("add_extraEOL").checked = beautifierSettings.AddNewLine;
+    document.getElementById("customise_indentation").value = indentation;
+    document.getElementById("keyword_div").elements.namedItem("keywordcase").value = beautifierSettings.KeywordCase;
+    document.getElementById("typename_div").elements.namedItem("typenamecase").value = beautifierSettings.TypeNameCase;
+    document.getElementById("mix_letter").checked = setting.mixLetter;
+    var eof = beautifierSettings.EndOfLine
+    eof = eof.replace(/\r/g, "\\r");
+    eof = eof.replace(/\n/g, "\\n");
+    eof = eof.replace(/\t/g, "\\t");
+    document.getElementById("cust_eol").value = eof;
+    var noFormatBool = loadNoFormatSetting();
+    if (noFormatBool) {
+        document.getElementById("no_format").checked = true;
+        noFormat();
+    }
+    counterDecode('customise_indentation', 'indent_s');
+    counterDecode('cust_eol', 'eol_s');
+}
 
-        function onLoad() {
-            let global_endOfLine = navigator.platform === 'Win32' ? '\\r\\n' : '\\n';
-            document.getElementById("cust_eol").value = global_endOfLine;
-            var setting = loadSetting();
-            if (setting == null) {
-                return;
-            }
+function decodeNewLineSetting(hasNewLine, noNewLine, str) {
+    if (hasNewLine.indexOf(str) >= 0) {
+        return "NewLine";
+    }
+    if (noNewLine.indexOf(str) >= 0) {
+        return "NoNewLine";
+    }
+    return "None";
+}
 
-            var beautifierSettings = setting.setting;
-            document.getElementById("remove_comments").checked = beautifierSettings.RemoveComments;
-            document.getElementById("remove_lines").checked = setting.removeLines;
-            document.getElementById("remove_report").checked = beautifierSettings.RemoveAsserts;
-            document.getElementById("check_alias").checked = beautifierSettings.CheckAlias;
-            var alignSettings = beautifierSettings.SignAlignSettings;
-            if (alignSettings != null) {
-                var signAlignKeywords = alignSettings.keyWords;
-                if (signAlignKeywords != null && signAlignKeywords.length > 0) {
-                    document.getElementById("sign_align_port").checked = signAlignKeywords.indexOf("PORT") >= 0;
-                    document.getElementById("sign_align_function").checked = signAlignKeywords.indexOf("FUNCTION") >= 0;
-                    document.getElementById("sign_align_procedure").checked = signAlignKeywords.indexOf("PROCEDURE") >= 0;
-                    document.getElementById("sign_align_generic").checked = signAlignKeywords.indexOf("GENERIC") >= 0;
-                }
-                document.getElementById("sign_align_all").checked = alignSettings.isAll;
-                document.getElementById("sign_align_mode_div").elements.namedItem("sign_align_modecase").value = alignSettings.mode;
-                document.getElementById("align_comments").checked = alignSettings.alignComments;
-            }
-            var newLineSettings = beautifierSettings.NewLineSettings;
-            var newLineAfter = newLineSettings.newLineAfter;
-            var noNewLineAfter = newLineSettings.noNewLineAfter;
-            document.getElementById("new_line_after_port").elements.namedItem("new_line_after_portcase").value = decodeNewLineSetting(newLineAfter, noNewLineAfter, "port");
-            document.getElementById("new_line_after_then").elements.namedItem("new_line_after_thencase").value = decodeNewLineSetting(newLineAfter, noNewLineAfter, "then");
-            document.getElementById("new_line_after_semicolon").elements.namedItem("new_line_after_semicoloncase").value = decodeNewLineSetting(newLineAfter, noNewLineAfter, ";");
-            document.getElementById("new_line_after_else").elements.namedItem("new_line_after_elsecase").value = decodeNewLineSetting(newLineAfter, noNewLineAfter, "else");
-            document.getElementById("new_line_after_generic").elements.namedItem("new_line_after_genericcase").value = decodeNewLineSetting(newLineAfter, noNewLineAfter, "generic");
-            document.getElementById("compress").checked = setting.compress;
-            var indentation = beautifierSettings.Indentation;
-            document.getElementById("use_space").checked = indentation != "\t";
-            document.getElementById("add_extraEOL").checked = beautifierSettings.AddNewLine;
-            document.getElementById("customise_indentation").value = indentation;
-            document.getElementById("keyword_div").elements.namedItem("keywordcase").value = beautifierSettings.KeywordCase;
-            document.getElementById("typename_div").elements.namedItem("typenamecase").value = beautifierSettings.TypeNameCase;
-            document.getElementById("mix_letter").checked = setting.mixLetter;
-            var eof = beautifierSettings.EndOfLine
-            eof = eof.replace(/\r/g, "\\r");
-            eof = eof.replace(/\n/g, "\\n");
-            eof = eof.replace(/\t/g, "\\t");
-            document.getElementById("cust_eol").value = eof;
-            var noFormatBool = loadNoFormatSetting();
-            if (noFormatBool) {
-                document.getElementById("no_format").checked = true;
-                noFormat();
-            }
-            counterDecode('customise_indentation', 'indent_s');
-            counterDecode('cust_eol', 'eol_s');
-        }
+//onLoad();
+var beautifierSettings;
+var compress;
+var no_format = false;
+var remove_lines = false;
+var mix_letter = false;
 
-        function decodeNewLineSetting(hasNewLine, noNewLine, str) {
-            if (hasNewLine.indexOf(str) >= 0) {
-                return "NewLine";
-            }
-            if (noNewLine.indexOf(str) >= 0) {
-                return "NoNewLine";
-            }
-            return "None";
-        }
-
-        //onLoad();
-        var beautifierSettings;
-        var compress;
-        var no_format = false;
-            var remove_lines = false;
-            var mix_letter = false;
-        function f(input) {
+function f(input) {
 
 
-            
 
-            var beautifierSettings = {
-                "RemoveComments": false,
-                "RemoveAsserts": false,
-                "CheckAlias": false,
-                "SignAlignSettings": {
-                    "isRegional": false,
-                    "isAll": false,
-                    "mode": "",
-                    "keyWords": [],
-                    "alignComments": true
-                },
-                "KeywordCase": "LowerCase",
-                "TypeNameCase": "LowerCase",
-                "Indentation": "\t",
-                "NewLineSettings": {
-                    "newLineAfter": [
-                        ";",
-                        "then"
-                    ],
-                    "noNewLineAfter": []
-                },
-                "EndOfLine": "\n",
-                "AddNewLine": true
-            }
-            var vhdlSettings = {
-                "setting": {
-                    "RemoveComments": false,
-                    "RemoveAsserts": false,
-                    "CheckAlias": false,
-                    "SignAlignSettings": {
-                        "isRegional": false,
-                        "isAll": false,
-                        "mode": "",
-                        "keyWords": [],
-                        "alignComments": true
-                    },
-                    "KeywordCase": "LowerCase",
-                    "TypeNameCase": "LowerCase",
-                    "Indentation": "\t",
-                    "NewLineSettings": {
-                        "newLineAfter": [
-                            ";",
-                            "then"
-                        ],
-                        "noNewLineAfter": []
-                    },
-                    "EndOfLine": "\n",
-                    "AddNewLine": true
-                },
-                "removeLines": true,
-                "compress": false,
-                "mixLetter": false
-            };
-            return beautify(input, beautifierSettings).replace(/(\r\n)*[ \t]*\r\n/g, '\r\n');
-        }
 
-        var indentation = "\t";
+    var beautifierSettings = {
+        "RemoveComments": false,
+        "RemoveAsserts": false,
+        "CheckAlias": false,
+        "SignAlignSettings": {
+            "isRegional": false,
+            "isAll": false,
+            "mode": "",
+            "keyWords": [],
+            "alignComments": true
+        },
+        "KeywordCase": "LowerCase",
+        "TypeNameCase": "LowerCase",
+        "Indentation": "\t",
+        "NewLineSettings": {
+            "newLineAfter": [
+                ";",
+                "then"
+            ],
+            "noNewLineAfter": []
+        },
+        "EndOfLine": "\n",
+        "AddNewLine": true
+    }
+    var vhdlSettings = {
+        "setting": {
+            "RemoveComments": false,
+            "RemoveAsserts": false,
+            "CheckAlias": false,
+            "SignAlignSettings": {
+                "isRegional": false,
+                "isAll": false,
+                "mode": "",
+                "keyWords": [],
+                "alignComments": true
+            },
+            "KeywordCase": "LowerCase",
+            "TypeNameCase": "LowerCase",
+            "Indentation": "\t",
+            "NewLineSettings": {
+                "newLineAfter": [
+                    ";",
+                    "then"
+                ],
+                "noNewLineAfter": []
+            },
+            "EndOfLine": "\n",
+            "AddNewLine": true
+        },
+        "removeLines": true,
+        "compress": false,
+        "mixLetter": false
+    };
+    return beautify(input, beautifierSettings).replace(/(\r\n)*[ \t]*\r\n/g, '\r\n');
+}
 
-        function CreateSettings() {
-            var remove_comments = false;            
-            var remove_report = false;
-            var check_alias = false;
-            var sign_align_port = false;
-            var sign_align_function = false;
-            var sign_align_procedure = false;
-            var sign_align_generic = false;
-            var sign_align_all = false;
-            var align_comments = true;
-            var sign_align_mode = false;
-            var new_line_after_port = true;
-            var new_line_after_then = true;
-            var new_line_after_semicolon = true;
-            var new_line_after_else = true;
-            var new_line_after_generic = true;
-            var use_space = false;
-            var compress = false;
-            var cust_indent = '\t';
-            var addNewLine = true;
-            var keywordcase = 'UpperCase';
-            var typenamecase = 'UpperCase';
-            var endOfLine = '\\n';
-            endOfLine = endOfLine.replace(/\\r/g, "\r");
-            endOfLine = endOfLine.replace(/\\n/g, "\n");
-            if (compress) {
-                remove_comments = true;
-            }
+var indentation = "\t";
 
-            
-            if (use_space) {
-                cust_indent = cust_indent.replace(/\\t/, "	");
-                indentation = cust_indent;
-            }
+function CreateSettings() {
+    var remove_comments = false;
+    var remove_report = false;
+    var check_alias = false;
+    var sign_align_port = false;
+    var sign_align_function = false;
+    var sign_align_procedure = false;
+    var sign_align_generic = false;
+    var sign_align_all = false;
+    var align_comments = true;
+    var sign_align_mode = false;
+    var new_line_after_port = true;
+    var new_line_after_then = true;
+    var new_line_after_semicolon = true;
+    var new_line_after_else = true;
+    var new_line_after_generic = true;
+    var use_space = false;
+    var compress = false;
+    var cust_indent = '\t';
+    var addNewLine = true;
+    var keywordcase = 'UpperCase';
+    var typenamecase = 'UpperCase';
+    var endOfLine = '\\n';
+    endOfLine = endOfLine.replace(/\\r/g, "\r");
+    endOfLine = endOfLine.replace(/\\n/g, "\n");
+    if (compress) {
+        remove_comments = true;
+    }
 
-            var newLineSettingsDict = {};
-            newLineSettingsDict["generic"] = new_line_after_generic;
-            newLineSettingsDict["generic map"] = new_line_after_generic;
-            newLineSettingsDict["port"] = new_line_after_port;
-            newLineSettingsDict["port map"] = new_line_after_port;
-            newLineSettingsDict[";"] = new_line_after_semicolon;
-            newLineSettingsDict["then"] = new_line_after_then;
-            newLineSettingsDict["else"] = new_line_after_else;
-            newLineSettings = ConstructNewLineSettings(newLineSettingsDict);
-            var signAlignKeywords = [];
-            if (sign_align_function) {
-                signAlignKeywords.push("FUNCTION");
-                signAlignKeywords.push("IMPURE FUNCTION");
-            }
-            if (sign_align_generic) {
-                signAlignKeywords.push("GENERIC");
-            }
-            if (sign_align_port) {
-                signAlignKeywords.push("PORT");
-            }
-            if (sign_align_procedure) {
-                signAlignKeywords.push("PROCEDURE");
-            }
-            sign_align = signAlignKeywords.length > 0;
-            let alignSettings = new signAlignSettings(sign_align, sign_align_all, sign_align_mode, signAlignKeywords, align_comments)
 
-            beautifierSettings = new BeautifierSettings(remove_comments, remove_report, check_alias,
-                alignSettings,
-                keywordcase,
-                typenamecase,
-                indentation,
-                newLineSettings,
-                endOfLine,
-                addNewLine);
+    if (use_space) {
+        cust_indent = cust_indent.replace(/\\t/, "	");
+        indentation = cust_indent;
+    }
 
-            return [beautifierSettings, compress];
-        }
+    var newLineSettingsDict = {};
+    newLineSettingsDict["generic"] = new_line_after_generic;
+    newLineSettingsDict["generic map"] = new_line_after_generic;
+    newLineSettingsDict["port"] = new_line_after_port;
+    newLineSettingsDict["port map"] = new_line_after_port;
+    newLineSettingsDict[";"] = new_line_after_semicolon;
+    newLineSettingsDict["then"] = new_line_after_then;
+    newLineSettingsDict["else"] = new_line_after_else;
+    newLineSettings = ConstructNewLineSettings(newLineSettingsDict);
+    var signAlignKeywords = [];
+    if (sign_align_function) {
+        signAlignKeywords.push("FUNCTION");
+        signAlignKeywords.push("IMPURE FUNCTION");
+    }
+    if (sign_align_generic) {
+        signAlignKeywords.push("GENERIC");
+    }
+    if (sign_align_port) {
+        signAlignKeywords.push("PORT");
+    }
+    if (sign_align_procedure) {
+        signAlignKeywords.push("PROCEDURE");
+    }
+    sign_align = signAlignKeywords.length > 0;
+    let alignSettings = new signAlignSettings(sign_align, sign_align_all, sign_align_mode, signAlignKeywords, align_comments)
 
-        function outputSetting() {
-            [beautifierSettings, compress] = CreateSettings();
-            var json = JSON.stringify(beautifierSettings, null, 4);
-            document.getElementById("vhdl").innerHTML = json;
-        }
+    beautifierSettings = new BeautifierSettings(remove_comments, remove_report, check_alias,
+        alignSettings,
+        keywordcase,
+        typenamecase,
+        indentation,
+        newLineSettings,
+        endOfLine,
+        addNewLine);
 
-        var localStorage = {
-            "settings": "{\"setting\":{\"RemoveComments\":false,\"RemoveAsserts\":false,\"CheckAlias\":false,\"SignAlignSettings\":{\"isRegional\":false,\"isAll\":false,\"mode\":\"\",\"keyWords\":[],\"alignComments\":false},\"KeywordCase\":\"UpperCase\",\"TypeNameCase\":\"UpperCase\",\"Indentation\":\"\\t\",\"NewLineSettings\":{\"newLineAfter\":[\";\",\"then\"],\"noNewLineAfter\":[]},\"EndOfLine\":\"\\n\",\"AddNewLine\":true},\"removeLines\":false,\"compress\":false,\"mixLetter\":false}",
-            "noFormat": "false"
-        }
+    return [beautifierSettings, compress];
+}
 
-        function saveSetting(setting) {
-            var json = JSON.stringify(setting);
-            json = json.replace(/\r/g, "\\r");
-            json = json.replace(/\n/g, "\\n");
-            json = json.replace(/\t/g, "\\t");
-            localStorage.setItem(localStorageSettingKey, json);
-        }
-        
-        function loadSetting() {
-            var json = localStorage.getItem(localStorageSettingKey);
-            if (json == null) {
-                return null;
-            }
-            return JSON.parse(json);
-        }
+function outputSetting() {
+    [beautifierSettings, compress] = CreateSettings();
+    var json = JSON.stringify(beautifierSettings, null, 4);
+    document.getElementById("vhdl").innerHTML = json;
+}
 
-        function saveNoFormatSetting(no_format) {
-            localStorage.setItem(localStorageNoFormatKey, no_format);
-        }
-        
-        function loadNoFormatSetting() {
-            return JSON.parse(localStorage.getItem(localStorageNoFormatKey));
-        }
+var localStorage = {
+    "settings": "{\"setting\":{\"RemoveComments\":false,\"RemoveAsserts\":false,\"CheckAlias\":false,\"SignAlignSettings\":{\"isRegional\":false,\"isAll\":false,\"mode\":\"\",\"keyWords\":[],\"alignComments\":false},\"KeywordCase\":\"UpperCase\",\"TypeNameCase\":\"UpperCase\",\"Indentation\":\"\\t\",\"NewLineSettings\":{\"newLineAfter\":[\";\",\"then\"],\"noNewLineAfter\":[]},\"EndOfLine\":\"\\n\",\"AddNewLine\":true},\"removeLines\":false,\"compress\":false,\"mixLetter\":false}",
+    "noFormat": "false"
+}
 
-        class VhdlSettings {
-            constructor(setting, removeLines, compress, mixLetter) {
-                this.setting = setting;
-                this.removeLines = removeLines;
-                this.compress = compress;
-                this.mixLetter = mixLetter;
-            }
-        }
+function saveSetting(setting) {
+    var json = JSON.stringify(setting);
+    json = json.replace(/\r/g, "\\r");
+    json = json.replace(/\n/g, "\\n");
+    json = json.replace(/\t/g, "\\t");
+    localStorage.setItem(localStorageSettingKey, json);
+}
+
+function loadSetting() {
+    var json = localStorage.getItem(localStorageSettingKey);
+    if (json == null) {
+        return null;
+    }
+    return JSON.parse(json);
+}
+
+function saveNoFormatSetting(no_format) {
+    localStorage.setItem(localStorageNoFormatKey, no_format);
+}
+
+function loadNoFormatSetting() {
+    return JSON.parse(localStorage.getItem(localStorageNoFormatKey));
+}
+
+class VhdlSettings {
+    constructor(setting, removeLines, compress, mixLetter) {
+        this.setting = setting;
+        this.removeLines = removeLines;
+        this.compress = compress;
+        this.mixLetter = mixLetter;
+    }
+}

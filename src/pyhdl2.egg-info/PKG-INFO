@@ -10,7 +10,7 @@ Platform: linux
 Platform: cygwin
 Platform: win32
 Classifier: Programming Language :: Python :: 3
-Requires-Python: >=3.6
+Requires-Python: >=3.9
 Provides-Extra: testing
 License-File: LICENSE
 

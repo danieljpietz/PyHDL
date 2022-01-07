@@ -11,6 +11,7 @@ class _Type:
     type_name: str
     type: type
     requires: Optional[Dict[str, Tuple[str]]] = None
+    package: Optional[Any]
 
     def __str__(self):
         return self.type_name
@@ -59,12 +60,22 @@ class _Array(Type):
     bounds: Tuple[int, int] = (-1, -1)
     values: Optional[typing.List[Type]] = None
 
+    def typestring(self):
+        return f"type {self.name} is array of {self.base.type_name} " \
+               f"({self.bounds[0]} {'down' if self.bounds[0] > self.bounds[1] else ''}to " \
+               f"{self.bounds[1]});"
+
 
 def isarray(cls):
     try:
         return issubclass(cls, _Array)
     except TypeError:
         return isinstance(cls, _Array)
+
+
+def isconstant(cls):
+    from .signal import Constant
+    return isinstance(cls, Constant)
 
 
 def new_type(arg: typing.Type[Type]):
@@ -112,6 +123,12 @@ class Record(_Type):
         values = ','.join([f"{key} => {self.__dict__[key].value()}" for key in self.__annotations__])
         return f"({values})"
 
+    def typestring(self):
+        return f"type {self.__name__} is record\n\t" + \
+               '\n\t'.join(
+                   [f"{key} : {self.__annotations__[key].type_name};" for key in self.__annotations__]) \
+               + f"\nend record {self.__name__};"
+
     pass
 
 
@@ -120,13 +137,6 @@ def isrecord(cls):
         return issubclass(cls, Record)
     except TypeError:
         return isinstance(cls, Record)
-
-
-def record_typestring(custom_type: Any):
-    return f"type {custom_type.__name__} is record\n\t" + \
-           '\n\t'.join(
-               [f"{key} : {custom_type.__annotations__[key].type_name};" for key in custom_type.__annotations__]) \
-           + f"\nend record {custom_type.__name__};"
 
 
 def generate_typestrings(types):
@@ -141,16 +151,5 @@ def generate_typestrings(types):
     pass
 
 
-def array_typestring(custom_type: Any):
-    return f"type {custom_type.name} is array of {custom_type.base.type_name} " \
-           f"({custom_type.bounds[0]} {'down' if custom_type.bounds[0] > custom_type.bounds[1] else ''}to " \
-           f"{custom_type.bounds[1]});"
-
-
 def generate_typestring(custom_type: Any):
-    if isarray(custom_type):
-        return array_typestring(custom_type)
-    elif isrecord(custom_type):
-        return record_typestring(custom_type)
-    else:
-        return ''
+    return custom_type.typestring(custom_type)
