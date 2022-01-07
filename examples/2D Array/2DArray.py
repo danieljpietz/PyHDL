@@ -15,8 +15,8 @@ class Array2DExample(Module):
 
 
 
-    @process()
-    def my_process(self):
+    @concurrent
+    def concurrent_statements(self):
         for i in range(3):
             for j in range(3):
                 self.tensor[i][0][j].next = self.sig1[i][j]
