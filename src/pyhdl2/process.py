@@ -1,4 +1,4 @@
-from .core import _PHDLObj
+from .core import _PHDLObj, f_string_from_template
 from typing import Optional, Tuple, List, Callable, Union, Any
 from .signal import Signal, PortSignal, Direction, Constant
 from .check import check_name
@@ -73,12 +73,11 @@ class Process(_PHDLObj):
 
         _ifs = '\n'.join([IF.value() for IF in self.if_statements])
 
-        _ser = f"{self.name}: process {_sensitivity}\n" \
-               f"begin\n" \
-               f"{self.proc_str}\n" \
-               f"{_ifs}" \
-               f"end process;"
-        return _ser
+        return f_string_from_template('process.vhdl',
+                                      name=self.name,
+                                      sensitivity=_sensitivity,
+                                      body='\n'.join([self.proc_str, _ifs]))
+
 
 
 _currentProcess: Optional[Process]

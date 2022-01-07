@@ -1,5 +1,5 @@
 from typing import Callable, List, Union, Optional, Any
-from .core import _PHDLObj
+from .core import _PHDLObj, f_string_from_template, indent
 from .type import isarray
 from .architecture import Architecture
 from .arithmetic import ArithmeticStack
@@ -64,16 +64,19 @@ class Conditional(_PHDLObj):
         self._elses.append(f"{_else.value()}")
 
     def value(self):
+        nl = '\n'
+        tab = '\t'
         if self.condition is not None:
-            nl = '\n'
-            tab = '\t'
-            self.if_str = f"\t{self.func.__name__}: if {self.condition.value()} then \n" \
-                          f"{f'{nl}'.join(self._if_strs)}" \
-                          f"{f'{nl}'.join(self._elses)}\n" \
-                          f"end if {self.func.__name__};"
-            self.if_str = self.if_str.replace(nl, f"{nl}{tab * (len(ifStack) + 1)}")
+            self.if_str = f_string_from_template('conditional.vhdl',
+                                                 name=self.func.__name__,
+                                                 condition=self.condition.value(),
+                                                 if_str='\n'.join(self._if_strs),
+                                                 else_str='\n'.join(self._elses))
+
+            self.if_str = indent(self.if_str, len(ifStack) + 1)
             return self.if_str
-        pass
+        else:
+            raise AttributeError("Conditional Statement must contain a condition")
 
 
 class Else(Conditional):
@@ -95,7 +98,7 @@ class Else(Conditional):
         tab = '\t'
         self.if_str = f"else {f'if {self.condition.value()} then' if self.condition is not None else ''} \n" \
                       f"{f'{nl}'.join(self._if_strs)}"
-        self.if_str = self.if_str.replace(nl, f"{nl}{tab * (len(ifStack))}")
+        self.if_str = indent(self.if_str, len(ifStack))
         return self.if_str
 
 

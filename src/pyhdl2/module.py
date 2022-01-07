@@ -9,13 +9,11 @@ class Module(Architecture):
 
 
 def module(cls):
-
     _interfaces = []
 
     for sig in cls.__dict__.values():
         if isinstance(sig, PortSignal):
             _interfaces.append(sig)
-
 
     @entity
     class _ent(Entity):

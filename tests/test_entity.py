@@ -29,7 +29,7 @@ def test_serialize_entity():
     @entity
     class MyEntity(Entity):
         interfaces = (PortSignal("clk", std_logic, Direction.In),)
-    assert MyEntity.value() == 'entity MyEntity is\n\t port (clk : in std_logic);\nend entity MyEntity;'
+    assert MyEntity.value() == 'entity MyEntity is\r\n\tport (clk : in std_logic);\r\nend entity MyEntity;'
 
 
 def test_create_entity_bad_name():

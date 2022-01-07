@@ -1,4 +1,4 @@
-from .core import _PHDLObj
+from .core import _PHDLObj, f_string_from_template, indent
 from .entity import Entity
 from .signal import Signal, PortSignal
 from typing import List, Dict, Tuple
@@ -30,20 +30,21 @@ class Architecture(_PHDLObj):
             raise TypeError(f"{sig.__class__.__name__} object not derived from Signal")
 
     def value(self):
-        _signals = self.signals_string()
+        _signals = '\t' + self.signals_string()
 
-        _processes = '\n\n'.join([process.value() for process in self.processes])
-        _processes = '\t' + _processes.replace('\n', '\n\t')
+        functionality = '\n\n'.join([process.value() for process in self.processes])
+        functionality = indent(functionality, 1)
 
-        _typestrings = self.typestrings.replace('\n', '\n\t')
-        _typestrings = f"\n\t{_typestrings}\n" if len(_typestrings) != 0 else ''
+        types = indent(self.typestrings, 1)
+        types = f"\n\t{types}\n" if len(types) != 0 else ''
 
-        return f"architecture rtl of {self.entity.name} is\n" \
-               f"{_typestrings}" \
-               f"\n\t{_signals}\n\n" \
-               f"begin\n" \
-               f"{_processes}\n" \
-               f"end architecture rtl;"
+        declarations = _signals + types
+
+        return f_string_from_template("architecture.vhdl",
+                                      name=self.name,
+                                      entity=self.entity.name,
+                                      declarations=declarations,
+                                      functionality=functionality)
 
     def signals_string(self):
         return ";\n\t".join([f'{signal.serialize_declaration()}' for signal in self.signals]) + ';' \

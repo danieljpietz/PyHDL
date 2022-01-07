@@ -1,3 +1,4 @@
+from .core import f_string_from_template, indent
 from .signal import PortSignal
 from .architecture import Architecture, _architecture, get_architecture_processes, get_architecture_types
 from .check import check_name
@@ -19,11 +20,12 @@ class Procedure(Architecture):
     def value(self):
         proc = self.processes[0]
         _interfaces = self.entity.interface_string(self.entity)
-        return f"procedure {self.__class__.__name__} ({_interfaces}) is \n" \
-               f"{self.signals_string()}\n" \
-               f"begin\n" \
-               f"{proc.proc_str}\n" \
-               f"end procedure {self.__class__.__name__};"
+
+        return f_string_from_template('procedure.vhdl',
+                                      name=self.__class__.name,
+                                      interfaces=_interfaces,
+                                      declarations=indent(self.signals_string(), 1),
+                                      body=indent(proc.proc_str, 1))
 
 
 def procedure(_target):

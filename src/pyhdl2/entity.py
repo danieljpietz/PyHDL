@@ -1,4 +1,4 @@
-from .core import _PHDLObj
+from .core import _PHDLObj, f_string_from_template
 from typing import Optional, Tuple
 from .signal import PortSignal
 from .check import check_name
@@ -15,9 +15,8 @@ class Entity(_PHDLObj):
             if len(self.interfaces) > 0 else " "
 
     def value(self):
-        return f"entity {self.name} is\n" \
-               f"\t port ({self.interface_string()});\n" \
-               f"end entity {self.name};"
+        return f_string_from_template('entity.vhdl', name=self.name, interfaces=self.interface_string())
+
 
 
 def entity(Target):

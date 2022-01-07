@@ -1,4 +1,4 @@
-from .core import _PHDLObj
+from .core import _PHDLObj, f_string_from_template, indent
 from .type import generate_typestrings, _Type
 from .signal import Constant
 
@@ -20,15 +20,13 @@ class Package(_PHDLObj):
                 self.types.append(elem)
         pass
 
-
-
-
     def value(self):
-        nl = '\n'
-        return f"package {self.name} is \n" \
-               f"{generate_typestrings(self.types)} \n" \
-               f"{f'{nl}'.join([f'{const.serialize_declaration()};' for const in self.constants])}" \
-               f"end package {self.name};\n"
+        types = indent(generate_typestrings(self.types), 1)
+        constants = indent('\n'.join([f'{const.serialize_declaration()};' for const in self.constants]), 1)
+        return f_string_from_template('package.vhdl',
+                                      name=self.name,
+                                      types='\t' + types,
+                                      constants='\t' + constants)
 
 
 def package(cls):
