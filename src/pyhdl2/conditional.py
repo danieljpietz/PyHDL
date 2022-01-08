@@ -99,7 +99,7 @@ class Else(Conditional):
     def value(self):
         nl = '\n'
         tab = '\t'
-        self.if_str = f"else {f'if {self.condition.value()} then' if self.condition is not None else ''} \n" \
+        self.if_str = f"else {f'if {self.condition.value()} then' if self.condition is not None else ''} \n\n" \
                       f"{f'{nl}'.join(self._if_strs)}"
         self.if_str = indent(self.if_str, len(ifStack))
         return self.if_str

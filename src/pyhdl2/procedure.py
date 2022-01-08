@@ -4,7 +4,7 @@ from .architecture import Architecture, _architecture, get_architecture_processe
 from .check import check_name
 from .process import Process, _get_current_process
 from .entity import Entity
-from typing import Tuple, Any
+from typing import Tuple
 from .conditional import _get_current_if
 
 
@@ -27,7 +27,7 @@ class Procedure(Architecture):
                                       name=self.__class__.__name__,
                                       interfaces=_interfaces,
                                       declarations=indent(self.signals_string(), 1),
-                                      body=indent(proc.proc_str, 1))
+                                      body=indent(proc.get_body(), 1))
 
     def __call__(self, *args, **kwargs):
         for found, expected in zip(args, self.interfaces):

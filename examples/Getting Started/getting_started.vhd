@@ -1,4 +1,4 @@
--- Generated using pyhdl2 version 0.2a on 01/07/2022 at 07:34:08 
+-- Generated using pyhdl2 version 0.2a on 01/07/2022 at 22:00:20 
 
 library IEEE;
 use IEEE.std_logic_1164.all;
@@ -18,10 +18,11 @@ architecture GettingStarted_rtl of GettingStarted is
 begin
 	my_process : process (clk)
 	begin
-
-		my_if : if clk = '1' then
-			sig1 <= MyConstant;
+		my_if : if rising_edge(clk);
+			then
+			 sig1 <= MyConstant;
 			output <= sig1;
+
 		end if my_if;
-	end process;
+	end process my_process;
 end architecture GettingStarted_rtl;

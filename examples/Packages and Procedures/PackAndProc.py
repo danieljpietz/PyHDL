@@ -9,11 +9,22 @@ class MyProcedure(Procedure):
     sig = Signal("sig", std_logic)
 
     def invoke(self):
-        self.c.next = self.a & self.b
+        @IF(self.a)
+        def my_if():
+            self.c.next = self.a & self.b
+
+        @ELSE()
+        def my_else():
+            self.c.next = self.a | self.b
+
+
+@function
+def myFunction(self, arg1: std_logic) -> std_logic:
+    self.output.next = arg1
 
 @package
 class MyPackage:
-    elements = [MyProcedure]
+    elements = [MyProcedure, myFunction]
 
 
 @module

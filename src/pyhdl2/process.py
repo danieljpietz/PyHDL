@@ -69,18 +69,20 @@ class Process(_PHDLObj):
         self.if_statements.append(proc)
         pass
 
+    def get_body(self):
+        _ifs = '\n'.join([IF.value() for IF in self.if_statements])
+        return '\n'.join([self.proc_str, _ifs])
+
     def value(self):
         _sensitivity = f"({', '.join([signal.name for signal in self.sensitivity])})" \
             if isinstance(self.sensitivity, tuple) \
             else f"({self.sensitivity.name})" if self.sensitivity is not None \
             else ""
 
-        _ifs = '\n'.join([IF.value() for IF in self.if_statements])
-
         return f_string_from_template('process.vhdl',
                                       name=self.name,
                                       sensitivity=_sensitivity,
-                                      body='\n'.join([self.proc_str, _ifs]))
+                                      body=self.get_body())
 
 
 

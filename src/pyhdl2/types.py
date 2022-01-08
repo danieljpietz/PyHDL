@@ -52,3 +52,4 @@ class integer(Type):
 
     def cast(self, other: typing.Type[Any]) -> bool:
         pass
+

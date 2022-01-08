@@ -29,7 +29,7 @@ class GettingStarted(Module):
 
     @process(clk)
     def my_process(self):
-        @IF(self.clk == std_logic('1'))
+        @IF(rising_edge(self.clk))
         def my_if():
             self.entity.output.next = self.sig1
             self.sig1.next = Const
