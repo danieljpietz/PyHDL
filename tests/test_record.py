@@ -27,3 +27,14 @@ def test_create_record():
         def my_process(self):
             self.sig.v.next = self.sig2
             self.sig2.next = self.sig2.neg()
+
+
+def test_record_typecheck():
+    with pytest.raises(TypeError):
+        @record
+        class MyRecord(Record):
+            v: std_logic
+            v1: std_logic
+            pass
+
+        x = MyRecord(std_logic('1'), integer(3))

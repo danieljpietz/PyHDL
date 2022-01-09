@@ -31,7 +31,6 @@ class Conditional(Statements):
                                                  name=self.get_function_name(),
                                                  condition=self.condition.value(),
                                                  body=super(Conditional, self).value())
-
             self.if_str = indent(self.if_str, len(ifStack) + 1)
             return self.if_str
         else:
@@ -71,7 +70,6 @@ def ELSEIF(condition):
 def ELSE():
     global ifLast
     _else = Else(_get_current_process().architecture, None)
-    ifLast.add_child(_else)
     return _else
 
 

@@ -17,14 +17,21 @@ class _Type:
     def __str__(self):
         return self.name
 
+    def __new__(cls: typing.Type[Any], *_v):
+        if not isrecord(cls):
+            v = _v[0]
+            if v is not None and not cls.__contains__(cls, v):
+                raise ValueError(f"{v} not in the domain of {cls.name}")
+            cls.type = cls
+            return super(_Type, cls).__new__(cls)
+        else:
+            for expected, actual in zip(cls.__annotations__.values(), _v):
+                if not isinstance(actual, expected):
+                    raise TypeError(f"Unexpected type found in  record. Expected {expected} but got {actual}")
+            pass
+
 
 class Type(_Type, Operable):
-
-    def __new__(cls: typing.Type[Any], v: Any = None):
-        if v is not None and not cls.__contains__(cls, v):
-            raise ValueError(f"{v} not in the domain of {cls}")
-        cls.type = cls
-        return super(Type, cls).__new__(cls)
 
     def __str__(self):
         return f"{self.name}({self.value()})"
@@ -72,11 +79,6 @@ def isarray(cls):
         return issubclass(cls, _Array)
     except TypeError:
         return isinstance(cls, _Array)
-
-
-def isconstant(cls):
-    from .signal import Constant
-    return isinstance(cls, Constant)
 
 
 def new_type(arg: typing.Type[Type]):

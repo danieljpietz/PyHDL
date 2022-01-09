@@ -1,7 +1,6 @@
-from .core import _PHDLObj, f_string_from_template
-from typing import Optional, Tuple, List, Callable, Union, Any
-from .signal import Signal, PortSignal, Direction, Constant
-from .check import check_name
+from .core import _PHDLObj
+from .signal import PortSignal, Direction, Constant
+
 
 
 class Statements(_PHDLObj):

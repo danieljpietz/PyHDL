@@ -2,7 +2,7 @@ from .core import _PHDLObj, f_string_from_template
 from typing import Optional, Tuple, Callable, Union, Any
 from .signal import Signal
 from .check import check_name
-from .statements import Statements
+from .statements import Statements, get_signals_from_list
 
 
 class Process(Statements):
@@ -48,21 +48,6 @@ class Process(Statements):
 
 
 _currentProcess: Optional[Process]
-
-
-def get_signals_from_list(signals):
-    signalsOld = []
-    signalsNew = signals
-    while len(signalsOld) != len(signalsNew):
-        signalsOld = signalsNew
-        signalsNew = []
-        for signal in signalsOld:
-            try:
-                for sig in signal:
-                    signalsNew.append(sig)
-            except TypeError:
-                signalsNew.append(signal)
-    return signalsNew
 
 
 def _set_current_process(proc: Optional[Process]):
