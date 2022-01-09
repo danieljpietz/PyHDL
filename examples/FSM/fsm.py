@@ -3,7 +3,7 @@ from pyhdl2 import *
 
 @fsm
 class FSMExample(FSM):
-    input = Signal("input", std_logic)
+    input = PortSignal("input", std_logic, Direction.In)
 
     @state
     def state1(self):
@@ -26,8 +26,11 @@ class FSMExample(FSM):
             @ELSE()
             def state2_else():
                 self.state.next = self.states('state1')
-
             pass
+
+    @state
+    def state3(self):
+        pass
 
 
 write_out("FSMExample.vhdl", FSMExample)

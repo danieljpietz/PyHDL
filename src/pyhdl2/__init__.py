@@ -1,5 +1,5 @@
 from .type import Type, new_type, Array, Record, record
-from .types import std_logic, std_logic_vector, integer
+from .types import std_logic, std_logic_vector, integer, unconnected
 from .signal import Signal, PortSignal, Direction, Constant
 from .entity import Entity, entity
 from .architecture import Architecture, architecture
@@ -15,3 +15,4 @@ from .function import function
 from .std_lib import *
 from .fsm import fsm, FSM, state
 from .statements import Statements
+from .component import Component

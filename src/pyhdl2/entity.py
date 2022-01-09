@@ -15,8 +15,8 @@ class Entity(_PHDLObj):
             if len(self.interfaces) > 0 else " "
 
     def value(self):
-        return f_string_from_template('entity.vhdl', name=self.name, interfaces=self.interface_string())
-
+        return f_string_from_template('entity_port.vhdl' if len(self.interface_string()) > 1 else 'entity_empty.vhdl',
+                                      name=self.name, interfaces=self.interface_string())
 
 
 def entity(Target):

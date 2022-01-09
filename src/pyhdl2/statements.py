@@ -1,11 +1,12 @@
 from .core import _PHDLObj
 from .signal import PortSignal, Direction, Constant
-
+from abc import abstractmethod
 
 
 class Statements(_PHDLObj):
     children = []
     types = []
+    components = []
     def __init__(self, scope, function):
         self.args = (self,)
         self.architecture = None
@@ -16,6 +17,7 @@ class Statements(_PHDLObj):
         self.statement_string = ''
         self.children = []
         self.types = []
+        self.components = []
         self.parent()
 
     def reset(self):
@@ -36,6 +38,9 @@ class Statements(_PHDLObj):
 
     def set_architecture(self, arch):
         self.architecture = arch
+
+    def get_architecture(self):
+        return self.architecture
 
     def set_function(self, func):
         self.__function = func
@@ -58,8 +63,14 @@ class Statements(_PHDLObj):
     def get_types(self):
         return self.types
 
+    def set_components(self, components):
+        self.components = components
+
+    def get_components(self):
+        return self.components
+
     def add_attrs(self):
-        for element in list(self.get_signals()) + list(self.get_types()):
+        for element in list(self.get_signals()) + list(self.get_types()) + list(self.get_components()):
             setattr(self, element.name, element)
 
     def process_signals(self):
@@ -80,6 +91,7 @@ class Statements(_PHDLObj):
         self.statement_strings.append(f"\t{signal.name} <= {signal.next.value()};")
         signal.next = None
 
+    #@abstractmethod
     def value(self):
         self.reset()
         set_current_statement(self)

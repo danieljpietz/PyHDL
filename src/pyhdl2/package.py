@@ -1,8 +1,8 @@
 from .core import _PHDLObj, f_string_from_template, indent
 from .type import generate_typestrings, _Type
 from .signal import Constant
+from .statements import Statements
 from .procedure import Procedure
-
 
 class Package(_PHDLObj):
     def __init__(self, cls):
@@ -16,7 +16,7 @@ class Package(_PHDLObj):
             elem.requires = {'work': f'{self.name}.all'}
             if isinstance(elem, Constant):
                 self.constants.append(elem)
-            elif isinstance(elem, Procedure):
+            elif isinstance(elem, Statements) or isinstance(elem, Procedure):
                 self.subprograms.append(elem)
             elif issubclass(elem, _Type):
                 self.types.append(elem)

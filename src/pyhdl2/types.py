@@ -2,6 +2,25 @@ import typing
 from typing import Any, Dict, Tuple
 from .type import Type, new_type, Array
 
+@new_type
+class unconnected(Type):
+
+    def __init__(self, **args):
+        raise TypeError("Cannot instantiate open type")
+
+    def __contains__(self, item):
+        return False
+
+    def value(self):
+        pass
+
+    def type_check(self, other: Any, op: str) -> type:
+        raise TypeError("Cannot perform any operation on open")
+
+    def cast(self, other: typing.Type[Any]) -> bool:
+        raise TypeError("Cannot cast open")
+
+    pass
 
 @new_type
 class std_logic(Type):

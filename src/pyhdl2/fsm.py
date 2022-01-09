@@ -42,6 +42,7 @@ def fsm_behavior(self):
 def fsm(cls):
     _states = list(filter(lambda CLS: isinstance(CLS, State), cls.__dict__.values()))
     cls.states = Enum("states", [state.get_function().__name__ for state in _states])
+    cls.clk = PortSignal("clk", std_logic, Direction.In)
     cls.state = Signal("state", cls.states)
     cls.States = _states
     cls.fsm_behavior = process(cls.clk)(fsm_behavior)

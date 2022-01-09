@@ -9,7 +9,7 @@ class MyProcedure(Procedure):
     sig = Signal("sig", std_logic)
 
     def invoke(self):
-        @IF(self.a)
+        @IF(rising_edge(self.a))
         def my_if():
             self.c.next = self.a & self.b
 

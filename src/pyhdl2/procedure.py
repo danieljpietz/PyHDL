@@ -18,8 +18,8 @@ class _Procedure(Statements):
 
 class Procedure(Architecture):
     interfaces: Tuple[PortSignal]
+    requires = {}
     package = None
-
     def value(self):
         _interfaces = self.entity.interface_string(self.entity)
 
@@ -34,6 +34,7 @@ class Procedure(Architecture):
             if found.type != expected.type:
                 raise TypeError(f"Unexpected type for {found.name}. "
                                 f"Expected {expected.type.name}, found {found.type.name}")
+        _get_current_process().get_architecture().add_element_libs_and_packs(self)
         _ProcedureCall(self, args)
 
 
@@ -41,11 +42,12 @@ class _ProcedureCall(Statements):
     def __init__(self, proc: Procedure, args):
         self.proc = proc
         self.call_args = args
+
         super(_ProcedureCall, self).__init__(tuple(), None)
 
     def value(self):
         return f"{self.proc.__class__.__name__} " \
-               f"({', '.join([f'{expected.name} => {actual.value()}' for expected, actual in zip(self.proc.interfaces, self.call_args)])}); "
+               f"({', '.join([f'{expected.name} => {actual.value()}' for expected, actual in zip(self.proc.interfaces, self.call_args)])});"
 
 
 def procedure(_target):

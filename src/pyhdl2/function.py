@@ -4,7 +4,7 @@ from .signal import PortSignal, Direction, Signal
 from .check import check_name
 from .core import f_string_from_template, indent
 from .process import _get_current_process
-
+from .statements import Statements
 
 class _FunctionCall(Signal):
     def __init__(self, func: Procedure, args):
@@ -26,22 +26,28 @@ def function(_target):
     _interfaces.append(PortSignal("output", ret_type, Direction.Out))
     check_name(_target.__name__)
 
-    @procedure
-    class _Function(Procedure):
-        interfaces = _interfaces[1:]
+
+    class Function(Statements):
+        #interfaces = _interfaces[1:]
+
+        def __init__(self, func, scope):
+            self.set_function(func)
+            self.set_signals(scope)
+            self.interfaces = _interfaces[1:-1]
+            self.set_args(*tuple([self] + self.interfaces))
+
 
         def invoke(self):
             _target(self, *tuple(self.interfaces[:-1]))
             pass
 
         def value(self):
-            proc = self.statements[0]
-            args = f", ".join([f"{signal.name} : {signal.type.name}" for signal in self.interfaces[:-1]])
+            args = f", ".join([f"{signal.name} : {signal.type.name}" for signal in self.interfaces])
             return f_string_from_template('function.vhdl',
                                           name=_target.__name__,
                                           args=args,
                                           ret_type=ret_type.name,
-                                          body=indent(proc.get_body(), 1)).replace("output <=", "return")
+                                          body=indent(super(Function, self).value(), 1)).replace("output <=", "return")
 
         def __call__(self, *args, **kwargs):
             for found, expected in zip(args, self.interfaces):
@@ -55,5 +61,5 @@ def function(_target):
                 pass
             return _FunctionCall(self, args)
 
-    _Function.__class__.__name__ = _target.__name__
-    return _Function
+    Function.__class__.__name__ = _target.__name__
+    return Function(_target, _interfaces)

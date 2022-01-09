@@ -1,3 +1,3 @@
-{name}: if {condition} then
+if {condition} then
 {body}
-end if {name};
+end if;

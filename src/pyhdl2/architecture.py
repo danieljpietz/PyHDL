@@ -16,6 +16,7 @@ class Architecture(_PHDLObj):
         self.libraries: Dict[str, List[str]] = {}
         self.types: List[type] = []
         self.packages = set()
+        self.components = []
         pass
 
     def add_signal(self, sig):
@@ -40,13 +41,19 @@ class Architecture(_PHDLObj):
         types = indent(self.typestrings, 1)
         types = f"\n\t{types}\n" if len(types) != 0 else ''
 
-        declarations = _signals + types
+        components = '\n'.join([comp.value() for comp in self.get_components()])
 
+        declarations = types + _signals + components
         return f_string_from_template("architecture.vhdl",
                                       name=self.name,
                                       entity=self.entity.name,
                                       declarations=declarations,
                                       functionality=functionality)
+
+    def get_components(self):
+        from .component import Component
+        return filter(lambda elem: isinstance(elem, Component), type(self).__dict__.values())
+        pass
 
     def get_signals(self):
         return self.signals + list(self.entity.interfaces)
@@ -61,7 +68,7 @@ class Architecture(_PHDLObj):
             if key in self.libraries:
                 for key_new in elem.requires[key]:
                     if key_new not in self.libraries[key]:
-                        self.libraries[key].add(key_new)
+                        self.libraries[key].append(key_new)
 
             else:
                 self.libraries[key] = set([k for k in elem.requires[key]]) \
@@ -112,6 +119,7 @@ def get_architecture_processes(_architecture):
         if isinstance(p, Process) or isinstance(p, Concurrent):
             p.set_signals(_architecture.get_signals())
             p.set_types(_architecture.types)
+            p.set_components(list(_architecture.get_components()))
             p.set_architecture(_architecture)
             _architecture.statements.append(p)
 
@@ -128,3 +136,4 @@ def get_architecture_types(target):
         else:
             custom_types.append(_type)
     target.typestrings = generate_typestrings(custom_types)
+

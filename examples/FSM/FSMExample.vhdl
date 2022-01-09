@@ -1,31 +1,35 @@
--- Generated using pyhdl2 version 0.2a on 01/08/2022 at 20:07:04 
+-- Generated using pyhdl2 version 0.2a on 01/09/2022 at 12:28:31 
 
 library IEEE;
 use IEEE.std_logic_1164.all;
 
 entity FSMExample is
-	port ();
+	port (
+		input : in std_logic;
+		clk : in std_logic);
 end entity FSMExample;
 
 architecture FSMExample_rtl of FSMExample is
-	signal input : std_logic;
-	signal state : states;
-	type states is (state1, state2);
 
+	type states is (state1, state2, state3);
+	signal state : states;
 begin
 	fsm_behavior : process (clk)
 	begin
-		fsm_if : if state = state1 then
-			state1_if : if input = '1' then
+		if state = state1 then
+			if input = '1' then
 			else state <= state2;
 				state <= state1;
-			end if state1_if;
-		end if fsm_if;
-		fsm_if : if state = state2 then
-			state2_if : if input = '1' then
+			end if;
+		end if;
+		if state = state2 then
+			if input = '1' then
 			else state <= state1;
 				state <= state2;
-			end if state2_if;
-		end if fsm_if;
+			end if;
+		end if;
+		if state = state3 then
+
+		end if;
 	end process fsm_behavior;
 end architecture FSMExample_rtl;

@@ -1,5 +1,5 @@
 from typing import Union
-from os import PathLike
+from os import PathLike, system
 from datetime import datetime
 from .meta import __version__
 from .entity import Entity
@@ -16,10 +16,9 @@ def preamble():
 
 def libraries(architecture):
     nl = '\n'
-    return  f'{nl}'.join([f"library {key};\n"
+    return f'{nl}'.join([f"library {key};\n"
                          f"{(f'{nl}'.join([f'use {key}.{package};' for package in architecture.libraries[key]]))}"
-                         for key in architecture.libraries.keys()])
-
+                         for key in architecture.libraries.keys()]).replace('library work;\n', '')
 
 
 def beautify(input: str):
@@ -50,8 +49,9 @@ class Project:
 
     def write_packages(self):
         for package in self.architecture.packages:
-            with open(f"{package.name}.vhd", 'w') as f:
+            with open(f"{package.name}.vhdl", 'w') as f:
                 f.write(beautify(package.value()))
+        return [f"{package.name}.vhdl" for package in self.architecture.packages]
 
     def write_out(self, filepath: Union[str, bytes, PathLike[str], PathLike[bytes], None] = None):
         if self.filepath != filepath:
@@ -63,10 +63,18 @@ class Project:
             else:
                 raise ValueError("No filepath")
 
-        self.write_packages()
+        package_files = self.write_packages()
 
         with open(self.filepath, 'w') as f:
             f.write(self.value())
+        project_files = package_files
+        project_files.append(self.filepath)
+        inspect(' '.join(project_files))
+
+
+def inspect(files):
+    print(f"ghdl -s {files}")
+    system(f"ghdl -s {files}")
 
 
 def write_out(filepath: Union[str, bytes, PathLike[str], PathLike[bytes]], entity: Union[Entity, Module],
