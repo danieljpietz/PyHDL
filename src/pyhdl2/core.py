@@ -17,4 +17,4 @@ def f_string_from_template(path, **kwargs):
 
 
 def indent(_str: str, level: int):
-    return '\t' * level + _str.replace('\n', '\t'*level)
+    return '\t' * level + _str.replace('\n', '\t' * level)

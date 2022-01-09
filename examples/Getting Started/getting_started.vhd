@@ -1,4 +1,4 @@
--- Generated using pyhdl2 version 0.2a on 01/07/2022 at 22:00:20 
+-- Generated using pyhdl2 version 0.2a on 01/08/2022 at 11:33:10 
 
 library IEEE;
 use IEEE.std_logic_1164.all;
@@ -14,6 +14,7 @@ end entity GettingStarted;
 architecture GettingStarted_rtl of GettingStarted is
 	signal record_signal : MyRecord := (v => '1', rst => '0');
 	signal sig1 : std_logic := '0';
+	signal vector : std_logic_vector (0 to 10);
 	constant my_other_const : std_logic := '1';
 begin
 	my_process : process (clk)

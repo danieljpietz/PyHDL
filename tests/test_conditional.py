@@ -2,7 +2,7 @@ import pytest
 from pyhdl2 import *
 
 
-def test_create_module():
+def test_conditional():
     @module
     class MyModule(Module):
 

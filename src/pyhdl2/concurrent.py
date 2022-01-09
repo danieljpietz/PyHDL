@@ -1,14 +1,13 @@
-from .process import Process
+from .statements import Statements
 
 
-class Concurrent(Process):
+class Concurrent(Statements):
 
     def __init__(self, func):
-        self.func = func
-        super(Concurrent, self).__init__()
+        self.set_function(func)
 
     def value(self):
-        return self.proc_str
+        return super(Concurrent, self).value()
 
 
 def concurrent(func):

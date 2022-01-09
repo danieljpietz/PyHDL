@@ -24,7 +24,7 @@ def test_create_architecture():
             self.sig2.next = self.sig
             self.sig3[1].next = self.sig & self.sig2 | (self.sig ^ self.sig2 & (self.sig3[2] | self.sig))
 
-            @IF(self.entity.clk == std_logic(1))
+            @IF(self.clk == std_logic(1))
             def my_if():
                 self.sig3[0].next = self.sig3[1]
 
@@ -38,11 +38,14 @@ def test_create_architecture():
 
         @process(entity.clk)
         def my_process(self):
-            self.sig2.next = self.sig
+            self.sig2[0].next = self.sig
 
-            @IF(self.entity.clk == std_logic(0))
+            @IF(self.clk == std_logic(0))
             def my_if():
                 self.sig3[1].next = self.sig3[2]
+
+    MyArchitecture2.value()
+    pass
 
 
 def test_architecture_forget_subclass():

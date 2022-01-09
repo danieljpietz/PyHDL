@@ -10,3 +10,8 @@ def rising_edge(self, sig: std_logic) -> std_logic:
 @function
 def falling_edge(self, sig: std_logic) -> std_logic:
     pass
+
+
+
+
+

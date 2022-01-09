@@ -16,9 +16,9 @@ def test_std_logic_domain_error():
 
 def test_std_logic_vector():
     x = std_logic_vector(0, 3)
-    assert x.type_name == "std_logic_vector (0 to 3)"
+    assert x.name == "std_logic_vector (0 to 3)"
     x = std_logic_vector(3, 0)
-    assert x.type_name == "std_logic_vector (3 downto 0)"
+    assert x.name == "std_logic_vector (3 downto 0)"
 
 
 def test_std_logic_vector_bad_index():

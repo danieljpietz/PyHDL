@@ -8,14 +8,14 @@ from dataclasses import dataclass
 
 class _Type:
     """Base class for all PHDL Types"""
-    type_name: str
+    name: str
     type: type
     requires: Optional[Dict[str, Tuple[str]]] = None
     package: Optional[Any]
     subtype: Optional[Tuple[Any]]
 
     def __str__(self):
-        return self.type_name
+        return self.name
 
 
 class Type(_Type, Operable):
@@ -27,7 +27,7 @@ class Type(_Type, Operable):
         return super(Type, cls).__new__(cls)
 
     def __str__(self):
-        return f"{self.type_name}({self.value()})"
+        return f"{self.name}({self.value()})"
 
     def __repr__(self):
         return str(self)
@@ -62,7 +62,7 @@ class _Array(Type):
     values: Optional[typing.List[Type]] = None
 
     def typestring(self):
-        return f"type {self.name} is array of {self.base.type_name} " \
+        return f"type {self.name} is array of {self.base.name} " \
                f"({self.bounds[0]} {'down' if self.bounds[0] > self.bounds[1] else ''}to " \
                f"{self.bounds[1]});"
 
@@ -86,8 +86,8 @@ def new_type(arg: typing.Type[Type]):
         except KeyError:
             if not issubclass(arg, Record):
                 raise NotImplementedError(f"{arg} missing required attribute {attr}")
-    arg.type_name = arg.__name__
-    check_name(arg.type_name)
+    arg.name = arg.__name__
+    check_name(arg.name)
     return arg
 
 
@@ -99,9 +99,9 @@ def Array(_name: str, _base_type: typing.Type[Type], _bounds: Tuple[int, int],
         name = _name
         subtype = (_base_type,)
         if generic_bounds:
-            type_name = f"{_name} ({bounds[0]} {'down' if bounds[0] > bounds[1] else ''}to {bounds[1]})"
+            name = f"{_name} ({bounds[0]} {'down' if bounds[0] > bounds[1] else ''}to {bounds[1]})"
         else:
-            type_name = _name
+            name = _name
 
         requires = kwargs['requires'] if 'requires' in kwargs else None
 
@@ -130,7 +130,7 @@ class Record(_Type):
     def typestring(self):
         return f"type {self.__name__} is record\n\t" + \
                '\n\t'.join(
-                   [f"{key} : {self.__annotations__[key].type_name};" for key in self.__annotations__]) \
+                   [f"{key} : {self.__annotations__[key].name};" for key in self.__annotations__]) \
                + f"\nend record {self.__name__};"
 
     pass
@@ -148,7 +148,7 @@ def generate_typestrings(types):
         for inner_custom_type in types:
             if inner_custom_type is outer_custom_type:
                 break
-            elif inner_custom_type.type_name == outer_custom_type.type_name:
+            elif inner_custom_type.name == outer_custom_type.name:
                 if generate_typestring(inner_custom_type) != generate_typestring(outer_custom_type):
                     raise ValueError(f"Found multiple definitions for type {inner_custom_type.name}.")
     return '\n'.join(set([generate_typestring(custom_type) for custom_type in types]))

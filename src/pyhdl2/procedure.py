@@ -6,13 +6,14 @@ from .process import Process, _get_current_process
 from .entity import Entity
 from typing import Tuple
 from .conditional import _get_current_if
+from .statements import Statements
 
 
-class _Procedure(Process):
+class _Procedure(Statements):
 
-    def __init__(self, func):
-        self.func = func
-        super(_Procedure, self).__init__()
+    def __init__(self, func, scope):
+        self.set_function(func)
+        self.set_signals(scope)
 
 
 class Procedure(Architecture):
@@ -20,37 +21,31 @@ class Procedure(Architecture):
     package = None
 
     def value(self):
-        proc = self.processes[0]
         _interfaces = self.entity.interface_string(self.entity)
 
         return f_string_from_template('procedure.vhdl',
                                       name=self.__class__.__name__,
                                       interfaces=_interfaces,
                                       declarations=indent(self.signals_string(), 1),
-                                      body=indent(proc.get_body(), 1))
+                                      body=indent(self.statements.value(), 1))
 
     def __call__(self, *args, **kwargs):
         for found, expected in zip(args, self.interfaces):
             if found.type != expected.type:
                 raise TypeError(f"Unexpected type for {found.name}. "
-                                f"Expected {expected.type.type_name}, found {found.type.type_name}")
-        if self.package is not None:
-            _get_current_process().architecture.add_element_libs_and_packs(self)
-        try:
-            _get_current_if().add_procedure_call(_ProcedureCall(self, args))
-        except IndexError:
-            _get_current_process().add_procedure_call(_ProcedureCall(self, args))
+                                f"Expected {expected.type.name}, found {found.type.name}")
+        _ProcedureCall(self, args)
 
 
-
-class _ProcedureCall(_PHDLObj):
+class _ProcedureCall(Statements):
     def __init__(self, proc: Procedure, args):
         self.proc = proc
-        self.args = args
+        self.call_args = args
+        super(_ProcedureCall, self).__init__(tuple(), None)
 
     def value(self):
         return f"{self.proc.__class__.__name__} " \
-               f"({', '.join([f'{expected.name} => {actual.value()}' for expected, actual in zip(self.proc.interfaces, self.args)])}); "
+               f"({', '.join([f'{expected.name} => {actual.value()}' for expected, actual in zip(self.proc.interfaces, self.call_args)])}); "
 
 
 def procedure(_target):
@@ -66,7 +61,7 @@ def procedure(_target):
 
     target.entity = _entity
     _architecture(target)
-    _target.proc = _Procedure(_target.invoke)
+    target.statements = _Procedure(_target.invoke, target.get_signals())
     get_architecture_processes(target)
     get_architecture_types(target)
     return target

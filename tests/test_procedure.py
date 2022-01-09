@@ -5,7 +5,6 @@ from pyhdl2 import *
 def test_create_procedure():
     @procedure
     class MyProcedure(Procedure):
-
         interfaces = (PortSignal("a", std_logic, Direction.In),
                       PortSignal("b", std_logic, Direction.In),
                       PortSignal("c", std_logic, Direction.Out))
@@ -14,8 +13,8 @@ def test_create_procedure():
 
         def invoke(self):
             self.c.next = self.a & self.b
-    pass
 
+    pass
 
 
 def test_create_bad_procedure():
@@ -24,6 +23,7 @@ def test_create_bad_procedure():
         class MyProcedure(Procedure):
             def invoke(self):
                 pass
+
 
 def test_prcedure_typecheck():
     with pytest.raises(TypeError):
@@ -50,6 +50,7 @@ def test_prcedure_typecheck():
             def proc(self):
                 MyProcedure(self.input1, self.input2, self.output)
 
+
 def test_call_procedure():
     @procedure
     class MyProcedure(Procedure):
@@ -66,7 +67,6 @@ def test_call_procedure():
 
     @module
     class MyMod(Module):
-
         input1 = Signal("input1", std_logic)
         input2 = Signal("input2", std_logic)
         output = Signal("output", std_logic)
@@ -76,4 +76,5 @@ def test_call_procedure():
             MyProcedure(self.input1, self.input2, self.output)
 
     MyMod.value()
+    MyProcedure.value()
     pass

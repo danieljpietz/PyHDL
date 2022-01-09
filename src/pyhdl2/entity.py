@@ -11,7 +11,7 @@ class Entity(_PHDLObj):
 
     def interface_string(self):
         nl = '\n\t\t   '
-        return f"{f';{nl}'.join([f'{signal.name} : {signal.direction} {signal.type.type_name}' for signal in self.interfaces])}" \
+        return f"{f';{nl}'.join([f'{signal.name} : {signal.direction} {signal.type.name}' for signal in self.interfaces])}" \
             if len(self.interfaces) > 0 else " "
 
     def value(self):

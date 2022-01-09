@@ -22,7 +22,7 @@ def test_function_creation():
 
 
 def test_bad_func_call():
-    with pytest.raises(AttributeError):
+    with pytest.raises(TypeError):
         @function
         def my_function(self, arg1: std_logic, arg2: std_logic) -> std_logic:
             pass

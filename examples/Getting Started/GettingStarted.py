@@ -18,12 +18,13 @@ class MyPackage:
 
 @module
 class GettingStarted(Module):
-
     clk = PortSignal('clk', std_logic, Direction.In)
     output = PortSignal('output', std_logic, Direction.Out)
 
     record_signal = Signal("record_signal", MyRecord, default=MyRecord(std_logic(1), std_logic(0)))
     sig1 = Signal("sig1", std_logic, default=std_logic(0))
+
+    vector = Signal("vector", std_logic_vector(0, 10))
 
     my_other_const = Constant("my_other_const", std_logic, std_logic('1'))
 

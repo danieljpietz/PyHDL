@@ -56,7 +56,7 @@ class Signal(_Signal):
         return self.name
 
     def serialize_declaration(self):
-        return f"{self.sig_str} {self.value()} : {self.type.type_name}" \
+        return f"{self.sig_str} {self.value()} : {self.type.name}" \
                f"{f' := {self.default.value()}' if self.default is not None else f''}"
 
 

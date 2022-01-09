@@ -80,13 +80,8 @@ def test_create_constant():
 def test_prevent_constant_change():
 
     with pytest.raises(TypeError):
-        @entity
-        class MyEnt(Entity):
-            interfaces = ()
-
-        @architecture
-        class MyArchitecture(Architecture):
-            entity = MyEnt
+        @module
+        class MyModule(Module):
             sig1 = Constant("sig1", std_logic, std_logic(1))
 
             @process()
