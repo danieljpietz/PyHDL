@@ -13,8 +13,8 @@ class _FunctionCall(Signal):
         self.type = func.interfaces[-1].type
 
     def value(self):
-        return f"{self.func.__class__.__name__}" \
-               f"({', '.join([f'{actual.value()}' for expected, actual in zip(self.func.interfaces[:-1], self.args)])}); "
+        return f"{self.func.get_function_name()}" \
+               f"({', '.join([f'{actual.value()}' for actual in  self.args])})"
 
 
 def function(_target):
