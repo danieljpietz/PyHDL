@@ -30,15 +30,10 @@ def test_create_component():
 
 
 def test_create_component_typecheck():
-    with pytest.raises(TypeError):
-        @module
-        class otherModule(Module):
-            clk = PortSignal("clk", std_logic, Direction.In)
-            rst = PortSignal("rst", std_logic, Direction.In)
-            output = PortSignal("output", integer, Direction.Out)
 
-            test_component = Component(MyModule)
-
-            @concurrent
-            def concurrent_section(self):
-                self.test_component(self.clk, self.rst, self.output)
+   with pytest.raises(TypeError):
+       test_component = Component("test_component", MyModule)
+       wrong_type = Signal("wrong_type", integer, Direction.Out)
+       @concurrent
+       def concurrent_section(self):
+           self.test_component(self.clk, self.rst, wrong_type)
