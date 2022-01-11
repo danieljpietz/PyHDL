@@ -69,9 +69,9 @@ class _Array(Type):
     values: Optional[typing.List[Type]] = None
 
     def typestring(self):
-        return f"type {self.name} is array of {self.base.name} " \
-               f"({self.bounds[0]} {'down' if self.bounds[0] > self.bounds[1] else ''}to " \
-               f"{self.bounds[1]});"
+        return f"type {self.name} is array " \
+               f"({self.bounds[0]} {'down' if self.bounds[0] > self.bounds[1] else ''} to " \
+               f"{self.bounds[1]}) of {self.base.name};"
 
 
 def isarray(cls):
