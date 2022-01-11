@@ -4,33 +4,17 @@ from pyhdl2 import *
 @fsm
 class FSMExample(FSM):
     input = PortSignal("input", std_logic, Direction.In)
+    signal1 = Signal("signal1", std_logic_vector(0, 100))
 
     @state
     def state1(self):
-        @IF(self.input == std_logic('1'))
-        def state1_if():
-            self.state.next = self.states('state1')
-
-            @ELSE()
-            def state1_else():
-                self.state.next = self.states('state2')
-
-        pass
-
-    @state
-    def state2(self):
-        @IF(self.input == std_logic('1'))
-        def state2_if():
-            self.state.next = self.states('state2')
-
-            @ELSE()
-            def state2_else():
-                self.state.next = self.states('state1')
+        @IF(rising_edge(self.clk))
+        def my_if():
+            for sig in self.signal1:
+                sig.next = std_logic(1)
             pass
 
-    @state
-    def state3(self):
-        pass
+
 
 
 write_out("FSMExample.vhdl", FSMExample)
