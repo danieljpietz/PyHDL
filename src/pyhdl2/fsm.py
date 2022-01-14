@@ -32,7 +32,6 @@ def fsm_behavior(self):
         _state.set_types(self.architecture.types)
         def fsm_if(state):
             state.parent()
-
         func = IF(self.state == state)
         func(fsm_if)
         func.args = _state,
