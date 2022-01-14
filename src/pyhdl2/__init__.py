@@ -16,3 +16,4 @@ from .std_lib import *
 from .fsm import fsm, FSM, state
 from .statements import Statements
 from .component import Component
+from .optimize import smx_optimizer

@@ -16,7 +16,7 @@ class _Signal(Operable):
         self.next: _Signal
         if isarray(self.type):
             self.values = [Signal(f"{self.name}({i})", self.type.base) for i in
-                           range(min(self.type.bounds), max(self.type.bounds))]
+                           range(min(self.type.bounds), max(self.type.bounds)+1)]
         elif isrecord(self.type):
             for key in self.type.__annotations__:
                 setattr(self, key, Signal(f"{self.name}.{key}", self.type.__annotations__[key]))

@@ -56,6 +56,9 @@ class ArithmeticStack(Operable):
         self.type: Type[Any]
         pass
 
+    def __getitem__(self, item):
+        return self.stack[item]
+
     def add(self, signal, op):
         if len(self.stack) == 0:
             self.type = signal.type

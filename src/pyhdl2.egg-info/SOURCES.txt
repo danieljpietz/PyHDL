@@ -39,6 +39,7 @@ src/pyhdl2.egg-info/not-zip-safe
 src/pyhdl2.egg-info/requires.txt
 src/pyhdl2.egg-info/top_level.txt
 src/pyhdl2/VHDL/architecture.vhdl
+src/pyhdl2/VHDL/component.vhdl
 src/pyhdl2/VHDL/conditional.vhdl
 src/pyhdl2/VHDL/entity_empty.vhdl
 src/pyhdl2/VHDL/entity_port.vhdl
