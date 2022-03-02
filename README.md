@@ -105,7 +105,7 @@ end architecture GettingStarted_rtl;
 
 When using types from an external library, PyHDL will manage library management.
 
-### Concurrent Statements and Processes
+###  Processes
 
 Processes can be included by adding functions to our class that have the _process_ decorator. Edge detection can be done using either an PyHDL if statement or the _RISING_EDGE_ decorator macro that has been included for convenience.
 
