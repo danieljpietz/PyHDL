@@ -146,8 +146,6 @@ write_out("getting_started.vhd", GettingStarted)
 <td>
 
 ``` vhdl
--- Generated using pyhdl2 version 0.2a on 03/02/2022 at 09:35:38 
-
 -- Generated using pyhdl2 version 0.2a on 03/02/2022 at 09:39:30 
 
 library IEEE;
